@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureGuard Pro v14.2 - Photo Zoom Hub</title>
+    <style>
+        :root { 
+            --primary: #0369a1; --accent: #0ea5e9; --bg: #f0f9ff; --card: #ffffff; 
+            --text-main: #0f172a; --text-sub: #475569; --border: #e2e8f0; --success: #10b981;
+            --danger: #ef4444; --warning: #f59e0b;
+        }
+
+        body { margin:0; font-family:'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text-main); }
+        
+        .lang-container { position: fixed; top: 20px; right: 20px; z-index: 10000; }
+        .langBtn { background: white; border: 1.5px solid var(--accent); padding: 8px 16px; border-radius: 50px; font-weight: 700; cursor: pointer; color: var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,0.05); transition: 0.3s; display: flex; align-items: center; gap: 6px; }
+        .langBtn:hover { background: var(--accent); color: white; transform: translateY(-2px); }
+
+        .login-wrapper { display: flex; max-width: 1100px; margin: 5vh auto; background: var(--card); border-radius: 24px; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.08); overflow: hidden; flex-wrap: wrap; border: 1px solid var(--border); }
+        .login-info { flex: 1 1 450px; background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%); color: white; padding: 50px; display: flex; flex-direction: column; }
+        .login-forms-container { flex: 1 1 450px; padding: 50px; background: #ffffff; }
+        .hero-img { width: 100%; height: 260px; object-fit: cover; border-radius: 20px; margin-bottom: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        
+        .card { background: var(--card); padding: 25px; margin-bottom: 25px; border-radius: 18px; border: 1px solid var(--border); box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+        h1, h2, h3 { margin-top: 0; font-weight: 700; }
+        h3 { font-size: 19px; color: var(--primary); border-left: 5px solid var(--accent); padding-left: 15px; margin-bottom: 20px; }
+
+        input, select { padding: 12px; margin: 8px 0; width: 100%; border: 1.5px solid var(--border); border-radius: 10px; box-sizing: border-box; font-size: 14px; background: #f8fafc; transition: 0.3s; color: var(--text-main); }
+        input:focus, select:focus { border-color: var(--accent); outline: none; background: white; box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1); }
+        
+        .pwd-container { position: relative; display: flex; align-items: center; width: 100%; }
+        .pwd-container input { padding-right: 40px; margin: 8px 0; width: 100%; }
+        .toggle-pwd { position: absolute; right: 10px; cursor: pointer; background: none; border: none; font-size: 18px; color: var(--text-sub); width: auto; padding: 0; margin: 0; }
+        .toggle-pwd:hover { transform: scale(1.1); }
+
+        button { padding: 12px 20px; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; width: 100%; transition: 0.3s; margin-top: 10px; font-size: 14px; }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-warning { background: var(--warning); color: white; }
+        .btn-dark { background: var(--primary); color: white; }
+        .btn-outline-danger { background: transparent; border: 2px solid var(--danger); color: var(--danger); }
+        .btn-outline-danger:hover { background: var(--danger); color: white; }
+        .btn-outline-warning { background: transparent; border: 2px solid var(--warning); color: #d97706; }
+        .btn-outline-warning:hover { background: var(--warning); color: white; border-color: var(--warning); }
+
+        .hidden { display: none !important; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px;}
+        th, td { border-bottom: 1.5px solid var(--border); padding: 10px; text-align: left; vertical-align: middle; }
+        th { color: var(--primary); background: #f0f9ff; font-weight: 700; border-radius: 8px 8px 0 0; font-size: 12px; }
+        
+        .badge { padding: 5px 12px; border-radius: 50px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+        .badge-absent { background: #fee2e2; color: #ef4444; }
+        .badge-present { background: #dcfce7; color: #10b981; }
+
+        /* Modals & Camera Styles */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .camera-container { position: relative; width: 250px; height: 250px; margin: 20px auto; border-radius: 50%; overflow: hidden; border: 4px solid var(--accent); box-shadow: 0 0 20px rgba(14, 165, 233, 0.5); }
+        .camera-container video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        .scan-line { position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: #10b981; box-shadow: 0 0 15px #10b981; animation: scan 2s infinite linear; }
+        
+        @keyframes scan { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
+
+        /* Photo Viewer Styling */
+        .photo-thumbnail { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; border: 2px solid var(--accent); cursor: pointer; transition: transform 0.2s ease; }
+        .photo-thumbnail:hover { transform: scale(1.2); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
+        @media (max-width: 768px) { .login-wrapper { margin: 0; border-radius: 0; } .login-info, .login-forms-container { padding: 30px; } }
+    </style>
+</head>
+<body>
+
+<div class="lang-container">
+    <button class="langBtn" onclick="window.toggleLang()">🌐 <span id="langText">English / বাংলা</span></button>
+</div>
+
+<div id="faceAuthModal" class="modal-overlay hidden">
+    <div class="card" style="width: 320px; text-align: center; background: white; padding: 30px;">
+        <h3 id="t_faceTitle" style="color: var(--primary); margin-bottom: 5px; border: none; padding: 0;">Facial Verification</h3>
+        <p style="font-size: 12px; color: var(--text-sub);">Please position your face inside the circle.</p>
+        
+        <div class="camera-container">
+            <video id="cameraFeed" autoplay playsinline></video>
+            <div class="scan-line"></div>
+        </div>
+        
+        <button onclick="window.verifyFace()" class="btn-success" id="btnScan" style="margin-bottom: 10px;">SCAN & VERIFY</button>
+        <button onclick="window.closeFaceAuth()" class="btn-danger" id="btnFaceCancel" style="background: transparent; color: var(--danger); border: 1px solid var(--danger);">CANCEL</button>
+        <canvas id="photoCanvas" style="display:none;"></canvas>
+    </div>
+</div>
+
+<div id="photoViewerModal" class="modal-overlay hidden" style="z-index: 10005;" onclick="window.closePhotoViewer()">
+    <div style="position: relative; max-width: 90%; max-height: 90%;" onclick="event.stopPropagation()">
+        <img id="fullSizeImage" src="" style="max-width: 100%; max-height: 80vh; border-radius: 12px; border: 4px solid var(--card); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+        <button onclick="window.closePhotoViewer()" style="position: absolute; top: -15px; right: -15px; background: var(--danger); color: white; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 16px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; padding: 0;">X</button>
+    </div>
+</div>
+
+<div id="login" class="login-wrapper">
+    <div class="login-info">
+        <img src="https://images.pexels.com/photos/5380642/pexels-photo-5380642.jpeg?auto=compress&cs=tinysrgb&w=800" class="hero-img">
+        <h2 id="t_heroTitle">SecureGuard HR & Tracking Hub</h2>
+        <p id="t_heroDesc" style="color: #e0f2fe; line-height: 1.6;">Enterprise deployment tracking with facial verification, automated absentee logic, and data archiving.</p>
+    </div>
+
+    <div class="login-forms-container">
+        <div style="text-align: center; margin-bottom: 40px;">
+            <h1 style="color: var(--primary); letter-spacing: -1px; margin: 0;">SecureGuard <span style="color: var(--accent);">Pro</span></h1>
+            <span id="serverStatus" style="font-size: 12px; color: var(--success); font-weight: 700;">● CLOUD SYSTEM ONLINE</span>
+        </div>
+        
+        <div class="card">
+            <h3 id="t_gLoginTitle">Guard Identification</h3>
+            <form onsubmit="window.initGuardLogin(); return false;">
+                <input id="gid" placeholder="Access ID Number" required autocomplete="off">
+                <button type="submit" class="btn-success" id="t_btnAccess">LOGIN TO TERMINAL</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h3 id="t_aLoginTitle">Management Authentication</h3>
+            <form onsubmit="window.adminLogin(); return false;">
+                <input id="auser" type="email" placeholder="Registered Admin Email" required>
+                <div class="pwd-container">
+                    <input id="apass" type="password" placeholder="Access Password" required>
+                    <button type="button" class="toggle-pwd" onclick="window.togglePassword('apass', this)">👁️</button>
+                </div>
+                <button type="submit" class="btn-primary" id="t_btnLogin">AUTHORIZE LOGIN</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="adminPanel" class="hidden" style="max-width: 1300px; margin: 30px auto; padding: 0 15px;">
+    <div class="card" style="background: linear-gradient(90deg, #0ea5e9, #0369a1); color: white; display: flex; justify-content: space-between; align-items: center; border:none; padding: 25px;">
+        <div>
+            <h2 id="t_dashTitle" style="margin:0; color: white;">Global Dashboard</h2>
+            <p id="adminIdentity" style="font-size: 13px; margin-top: 5px; opacity: 0.9;"></p>
+        </div>
+        <button onclick="window.logout()" class="btn-danger" id="t_btnDisconnect" style="width: auto; padding: 10px 25px; margin:0; border-radius: 50px;">DISCONNECT</button>
+    </div>
+
+    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+        <div class="card" style="flex: 2; min-width: 300px;">
+            <h3 id="t_regTitle">Guard Personnel Roster</h3>
+            <div style="display:flex; gap:10px; flex-wrap: wrap; background: #f8fafc; padding: 15px; border-radius: 10px;">
+                <input id="nid" placeholder="Personnel ID (e.g. G101)" style="flex:1;">
+                <input id="nname" placeholder="Legal Name" style="flex:2;">
+                <input id="nzone" placeholder="Assigned Zone" style="flex:1.5;">
+                <button onclick="window.saveGuard()" class="btn-success" id="btnSaveGuard" style="width:auto;">SAVE DATA</button>
+                <button onclick="window.cancelEdit()" class="btn-danger hidden" id="btnCancelEdit" style="width:auto;">CANCEL</button>
+            </div>
+            <div style="overflow-x:auto;"><table style="margin-top:15px;"><thead><tr><th id="th1">ID</th><th id="th2">NAME</th><th id="th3">ZONE</th><th id="th4">MANAGEMENT</th></tr></thead><tbody id="guardListBody"></tbody></table></div>
+        </div>
+
+        <div class="card" style="flex: 1; min-width: 300px;">
+            <h3 id="t_adminSetTitle">My Security Settings</h3>
+            <div class="pwd-container">
+                <input id="newMyPass" type="password" placeholder="Enter New Password">
+                <button type="button" class="toggle-pwd" onclick="window.togglePassword('newMyPass', this)">👁️</button>
+            </div>
+            <button onclick="window.changeMyPassword()" class="btn-dark" id="t_btnUpdateAdmin">UPDATE PASSWORD</button>
+            
+            <hr style="border:0; border-top:1px solid var(--border); margin:20px 0;">
+            
+            <h3 id="t_adminMgtTitle">Co-Admin Management</h3>
+            <div id="adminAddForm" class="hidden">
+                <input id="newAdminEmail" type="email" placeholder="New Admin Email">
+                <div class="pwd-container">
+                    <input id="newAdminPass" type="password" placeholder="Password (min 6 chars)">
+                    <button type="button" class="toggle-pwd" onclick="window.togglePassword('newAdminPass', this)">👁️</button>
+                </div>
+                <button onclick="window.addNewAdmin()" class="btn-primary" id="t_btnAddNewAdmin">ADD CO-ADMIN</button>
+                <table style="margin-top:10px;"><tbody id="adminListBody"></tbody></table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap:wrap; margin-bottom: 15px; gap: 10px;">
+            <div>
+                <h3 id="t_attTitle" style="margin-bottom: 5px;">Daily Attendance & Tracking Library</h3>
+                <p id="t_attDesc" style="font-size: 12px; color: var(--text-sub); margin:0;">* Guards checking in after 11:59 PM are recorded for the next date.</p>
+            </div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button onclick="window.downloadDailyReport()" class="btn-success" id="t_btnExport" style="width: auto; margin:0; padding: 8px 15px; font-size: 12px;">📥 EXCEL</button>
+                <button onclick="window.cleanWeeklyData()" class="btn-outline-warning" id="t_btnArchiveWeek" style="width: auto; margin:0; padding: 8px 15px; font-size: 12px;">🧹 ARCHIVE 7-DAY</button>
+                <button onclick="window.cleanOldData()" class="btn-outline-danger" id="t_btnArchive" style="width: auto; margin:0; padding: 8px 15px; font-size: 12px;">🧹 ARCHIVE 6-MONTH</button>
+            </div>
+        </div>
+        
+        <div style="display:flex; gap:15px; background: #f8fafc; padding: 15px; border-radius: 10px; align-items: center; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 200px;">
+                <label id="t_selectDate" style="font-size: 12px; font-weight: bold; color: var(--text-sub);">Select Date for Report:</label>
+                <input type="date" id="filterDate" onchange="window.generateDailyReport()" style="margin: 5px 0 0 0;">
+            </div>
+        </div>
+
+        <div style="overflow-x:auto; margin-top: 15px;">
+            <table id="reportTable">
+                <thead>
+                    <tr>
+                        <th id="th5">STATUS</th><th id="th6">PHOTO</th><th id="th7">NAME (ID)</th><th id="th8">IN TIME</th><th id="th9">OUT TIME</th>
+                        <th id="th10">TOTAL TIME</th><th id="th11">CHECK-IN LOC</th><th id="th12">LAST / LIVE LOC</th><th id="th13">ACTION</th>
+                    </tr>
+                </thead>
+                <tbody id="attendanceBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="guardPanel" class="hidden">
+    <div class="card" style="max-width: 500px; margin: 10vh auto; text-align: center; border-top: 8px solid var(--success); padding: 40px;">
+        <img id="guardSelfie" src="" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; border: 3px solid var(--success); display: none; margin: 0 auto 10px auto;">
+        
+        <h2 id="gname" style="font-size: 26px; color: var(--primary); margin-top: 0;"></h2>
+        <p id="gzone" style="color:var(--text-sub); font-size: 16px; margin-top:-10px;"></p>
+        
+        <div style="background: #f8fafc; padding:20px; border-radius:15px; margin: 25px 0; border: 1px solid var(--border);">
+            <p id="liveLoc" style="font-weight:700; color: var(--text-sub); margin:0;">📡 Waiting to verify location...</p>
+        </div>
+        
+        <button onclick="window.startShift()" class="btn-success" id="btnIn" style="height:60px; font-size:16px; margin-bottom: 15px;">START PATROL (CHECK IN)</button>
+        <button onclick="window.endShift()" class="btn-danger hidden" id="btnOut" style="height:60px; font-size:16px;">END PATROL (CHECK OUT)</button>
+        <button onclick="window.logout()" id="t_btnLogoutSession" style="background:transparent; color: var(--text-sub); text-decoration: underline;">Logout Session</button>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+import { getFirestore, collection, addDoc, doc, setDoc, deleteDoc, updateDoc, onSnapshot, query, orderBy, serverTimestamp, getDoc, getDocs, where } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updatePassword, signOut } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAkNJ-yCLwcEDaJOeXY6PjyY7RYIXL7xVk",
+    authDomain: "guard-pro-4fac8.firebaseapp.com",
+    projectId: "guard-pro-4fac8",
+    storageBucket: "guard-pro-4fac8.firebasestorage.app",
+    messagingSenderId: "468070571581",
+    appId: "1:468070571581:web:5487cf16ac4c8549265454"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+const secondaryApp = initializeApp(firebaseConfig, "Secondary");
+const secondaryAuth = getAuth(secondaryApp);
+
+window.currentLang = localStorage.getItem("sg_lang") || "en";
+window.adminRole = "Co-Admin";
+window.liveGuardLocations = {};
+window.allGuards = []; 
+window.dailyReportData = [];
+window.watchId = null;
+
+// Face Auth Variables
+window.tempGuardData = null;
+window.cameraStream = null;
+window.capturedFaceBase64 = null;
+
+/* --- Bilingual i18n Dictionary --- */
+const i18n = {
+    en: {
+        langText: "English / বাংলা", heroTitle: "SecureGuard HR & Tracking Hub", 
+        heroDesc: "Enterprise deployment tracking with facial verification, continuous background GPS monitoring, and data archiving.",
+        gLoginTitle: "Guard Identification", btnAccess: "LOGIN TO TERMINAL", aLoginTitle: "Management Authentication", btnLogin: "AUTHORIZE LOGIN",
+        dashTitle: "Global Dashboard", btnDisconnect: "DISCONNECT", regTitle: "Guard Personnel Roster", btnSaveGuard: "SAVE DATA", btnCancelEdit: "CANCEL",
+        adminSetTitle: "My Security Settings", btnUpdateAdmin: "UPDATE PASSWORD", adminMgtTitle: "Co-Admin Management", btnAddNewAdmin: "ADD CO-ADMIN",
+        attTitle: "Daily Attendance & Tracking Library", attDesc: "* Guards checking in after 11:59 PM are recorded for the next date.",
+        btnExport: "📥 EXCEL", btnArchive: "🧹 ARCHIVE 6-MONTH", btnArchiveWeek: "🧹 ARCHIVE 7-DAY", selectDate: "Select Date for Report:", btnLogoutSession: "Logout Session",
+        btnIn: "START PATROL (CHECK IN)", btnOut: "END PATROL (CHECK OUT)", placeId: "Access ID Number", placeUser: "Registered Admin Email", placePass: "Access Password",
+        placeNid: "Personnel ID (e.g. G101)", placeNname: "Legal Name", placeNzone: "Assigned Zone",
+        faceTitle: "Facial Verification", btnScan: "SCAN & VERIFY", btnFaceCancel: "CANCEL",
+        th1: "ID", th2: "NAME", th3: "ZONE", th4: "MANAGEMENT", th5: "STATUS", th6: "PHOTO", th7: "NAME (ID)", th8: "IN TIME", th9: "OUT TIME", th10: "TOTAL TIME", 
+        th11: "CHECK-IN LOC", th12: "LAST / LIVE LOC", th13: "ACTION",
+        msgNoOldData: "System optimal. No attendance records older than 6 months found.", 
+        msgArchiveConfirm: "Found {count} records older than 6 months.\n\nDownload backup and delete permanently?", 
+        msgNoWeekData: "System optimal. No attendance records older than 7 days found.",
+        msgArchiveWeekConfirm: "Found {count} records older than 7 days.\n\nDownload backup and delete permanently?",
+        msgArchiveSuccess: "Archive complete! Backup downloaded and server space freed.",
+        delConfirm: "Delete this guard?", delAttConfirm: "Delete this attendance record?"
+    },
+    bn: {
+        langText: "বাংলা / English", heroTitle: "সিকিউরগার্ড এইচআর ও ট্র্যাকিং হাব", 
+        heroDesc: "ফেইস ভেরিফিকেশন, কন্টিনিউয়াস ব্যাকগ্রাউন্ড জিপিএস, এবং স্বয়ংক্রিয় ডেটা আর্কাইভিং সহ এন্টারপ্রাইজ ট্র্যাকিং।",
+        gLoginTitle: "গার্ড পরিচিতি (লগইন)", btnAccess: "টার্মিনালে প্রবেশ করুন", aLoginTitle: "ম্যানেজমেন্ট অথেনটিকেশন", btnLogin: "লগইন নিশ্চিত করুন",
+        dashTitle: "গ্লোবাল ড্যাশবোর্ড", btnDisconnect: "লগআউট", regTitle: "গার্ড পার্সোনেল রোস্টার", btnSaveGuard: "সেভ করুন", btnCancelEdit: "বাতিল",
+        adminSetTitle: "আমার সিকিউরিটি সেটিংস", btnUpdateAdmin: "পাসওয়ার্ড পরিবর্তন করুন", adminMgtTitle: "কো-অ্যাডমিন ম্যানেজমেন্ট", btnAddNewAdmin: "অ্যাডমিন যুক্ত করুন",
+        attTitle: "দৈনিক উপস্থিতি এবং ট্র্যাকিং লাইব্রেরি", attDesc: "* রাত ১১:৫৯ এর পর চেক-ইন করলে তা পরের দিনের হিসেবে যুক্ত হবে।",
+        btnExport: "📥 এক্সেল ডাউনলোড", btnArchive: "🧹 ৬-মাসের আর্কাইভ", btnArchiveWeek: "🧹 ৭-দিনের আর্কাইভ", selectDate: "রিপোর্টের জন্য তারিখ নির্বাচন করুন:", btnLogoutSession: "লগআউট করুন",
+        btnIn: "ডিউটি শুরু (চেক ইন)", btnOut: "ডিউটি শেষ (চেক আউট)", placeId: "আইডি নম্বর দিন", placeUser: "নিবন্ধিত অ্যাডমিন ইমেইল", placePass: "পাসওয়ার্ড",
+        placeNid: "কর্মী আইডি (যেমন G101)", placeNname: "পুরো নাম", placeNzone: "নির্ধারিত জোন",
+        faceTitle: "ফেইস ভেরিফিকেশন", btnScan: "স্ক্যান ও যাচাই করুন", btnFaceCancel: "বাতিল",
+        th1: "আইডি", th2: "নাম", th3: "জোন", th4: "ম্যানেজমেন্ট", th5: "স্ট্যাটাস", th6: "ছবি", th7: "নাম (আইডি)", th8: "ইন টাইম", th9: "আউট টাইম", th10: "মোট সময়", 
+        th11: "চেক-ইন লোকেশন", th12: "শেষ / লাইভ লোকেশন", th13: "অ্যাকশন",
+        msgNoOldData: "৬ মাসের পুরোনো কোনো ডেটা পাওয়া যায়নি।", 
+        msgArchiveConfirm: "৬ মাসের পুরোনো {count} টি রেকর্ড পাওয়া গেছে।\n\nআপনি কি ব্যাকআপ ডাউনলোড করে এগুলো মুছে ফেলতে চান?", 
+        msgNoWeekData: "৭ দিনের পুরোনো কোনো ডেটা পাওয়া যায়নি।",
+        msgArchiveWeekConfirm: "৭ দিনের পুরোনো {count} টি রেকর্ড পাওয়া গেছে।\n\nআপনি কি ব্যাকআপ ডাউনলোড করে এগুলো মুছে ফেলতে চান?",
+        msgArchiveSuccess: "আর্কাইভ সম্পন্ন! ব্যাকআপ ডাউনলোড হয়েছে এবং ডেটা মুছে ফেলা হয়েছে।",
+        delConfirm: "গার্ডকে মুছে ফেলতে চান?", delAttConfirm: "এই রেকর্ডটি মুছে ফেলতে চান?"
+    }
+};
+
+window.applyLanguage = () => {
+    const t = i18n[window.currentLang];
+    const setTxt = (id, txt) => { if(document.getElementById(id)) document.getElementById(id).innerText = txt; };
+    const setPlc = (id, txt) => { if(document.getElementById(id)) document.getElementById(id).placeholder = txt; };
+
+    setTxt('langText', t.langText); setTxt('t_heroTitle', t.heroTitle); setTxt('t_heroDesc', t.heroDesc);
+    setTxt('t_gLoginTitle', t.gLoginTitle); setTxt('t_btnAccess', t.btnAccess); setTxt('t_aLoginTitle', t.aLoginTitle);
+    setTxt('t_btnLogin', t.btnLogin); setTxt('t_dashTitle', t.dashTitle); setTxt('t_btnDisconnect', t.btnDisconnect);
+    setTxt('t_regTitle', t.regTitle); 
+    if(!window.editModeId) setTxt('btnSaveGuard', t.btnSaveGuard);
+    setTxt('btnCancelEdit', t.btnCancelEdit); setTxt('t_adminSetTitle', t.adminSetTitle); setTxt('t_btnUpdateAdmin', t.btnUpdateAdmin);
+    setTxt('t_adminMgtTitle', t.adminMgtTitle); setTxt('t_btnAddNewAdmin', t.btnAddNewAdmin); setTxt('t_attTitle', t.attTitle);
+    setTxt('t_attDesc', t.attDesc); setTxt('t_btnExport', t.btnExport); setTxt('t_btnArchive', t.btnArchive); setTxt('t_btnArchiveWeek', t.btnArchiveWeek);
+    setTxt('t_selectDate', t.selectDate); setTxt('t_btnLogoutSession', t.btnLogoutSession);
+    setTxt('btnIn', t.btnIn); setTxt('btnOut', t.btnOut);
+    setTxt('t_faceTitle', t.faceTitle); setTxt('btnScan', t.btnScan); setTxt('btnFaceCancel', t.btnFaceCancel);
+
+    setPlc('gid', t.placeId); setPlc('auser', t.placeUser); setPlc('apass', t.placePass);
+    setPlc('nid', t.placeNid); setPlc('nname', t.placeNname); setPlc('nzone', t.placeNzone);
+    setPlc('newAdminEmail', "Email"); setPlc('newAdminPass', "Password"); setPlc('newMyPass', "New Password");
+
+    for(let i=1; i<=13; i++) setTxt('th'+i, t['th'+i]); 
+    if(window.allGuards.length > 0) window.generateDailyReport();
+};
+
+window.toggleLang = () => { window.currentLang = (window.currentLang === "en" ? "bn" : "en"); localStorage.setItem("sg_lang", window.currentLang); location.reload(); };
+
+window.togglePassword = function(inputId, btnElement) {
+    const input = document.getElementById(inputId);
+    if (input.type === "password") { input.type = "text"; btnElement.innerText = "🙈"; } 
+    else { input.type = "password"; btnElement.innerText = "👁️"; }
+};
+
+/* --- Admin Logic --- */
+async function authorizeAdmin(email) {
+    const ref = doc(db, "admins", email.toLowerCase());
+    const snap = await getDoc(ref);
+    if (!snap.exists()) { await setDoc(ref, { email: email.toLowerCase(), role: "Main Admin" }); return "Main Admin"; }
+    return snap.data().role;
+}
+
+window.adminLogin = async () => {
+    const e = document.getElementById("auser").value.trim(); const p = document.getElementById("apass").value;
+    try {
+        await signInWithEmailAndPassword(auth, e, p);
+        const role = await authorizeAdmin(e); window.adminRole = role;
+        window.showPanel("adminPanel");
+        document.getElementById("adminIdentity").innerText = `Authorized: ${e} (${role})`;
+        if(role === "Main Admin") document.getElementById("adminAddForm").classList.remove("hidden"); else document.getElementById("t_adminMgtTitle").classList.add("hidden");
+        loadAdmins(); loadGuards(); listenToTracking();
+    } catch(err) { alert("Auth Failure: " + err.message); }
+    document.getElementById("auser").value = ""; document.getElementById("apass").value = "";
+};
+
+window.changeMyPassword = async () => {
+    const np = document.getElementById("newMyPass").value;
+    if(np.length < 6) return alert("Min 6 chars");
+    try { await updatePassword(auth.currentUser, np); alert("Password updated!"); document.getElementById("newMyPass").value = ""; } catch(e) { alert("Error: " + e.message); }
+};
+
+window.addNewAdmin = async () => {
+    const e = document.getElementById("newAdminEmail").value.toLowerCase(); const p = document.getElementById("newAdminPass").value;
+    try {
+        await createUserWithEmailAndPassword(secondaryAuth, e, p); await signOut(secondaryAuth);
+        await setDoc(doc(db, "admins", e), { email: e, role: "Co-Admin" }); alert("Co-Admin Added.");
+        document.getElementById("newAdminEmail").value = ""; document.getElementById("newAdminPass").value = "";
+    } catch(err) { alert(err.message); }
+};
+
+function loadAdmins() {
+    onSnapshot(collection(db, "admins"), s => {
+        const b = document.getElementById("adminListBody"); b.innerHTML = "";
+        s.forEach(d => {
+            const isMain = d.data().role === "Main Admin";
+            const delBtn = (window.adminRole === "Main Admin" && !isMain) ? `<button onclick="window.delAdmin('${d.id}')" class="btn-danger" style="padding:4px 8px; font-size:11px;">DEL</button>` : "";
+            b.innerHTML += `<tr><td style="font-size:12px;">${d.data().email}</td><td style="text-align:right">${delBtn}</td></tr>`;
+        });
+    });
+}
+window.delAdmin = (id) => { if(confirm("Terminate this admin?")) deleteDoc(doc(db, "admins", id)); };
+
+/* --- Guard Personnel CRUD --- */
+window.saveGuard = async () => {
+    const id = document.getElementById("nid").value.toUpperCase(); const n = document.getElementById("nname").value; const z = document.getElementById("nzone").value;
+    if(!id || !n) return; await setDoc(doc(db, "guards", id), { name: n, zone: z }); window.cancelEdit();
+};
+window.loadEdit = (id, n, z) => {
+    window.editModeId = id; document.getElementById("nid").value = id; document.getElementById("nid").disabled = true;
+    document.getElementById("nname").value = n; document.getElementById("nzone").value = (z !== 'undefined' ? z : '');
+    document.getElementById("btnSaveGuard").innerText = "UPDATE"; document.getElementById("btnCancelEdit").classList.remove("hidden");
+};
+window.cancelEdit = () => {
+    window.editModeId = null; document.getElementById("nid").value = ""; document.getElementById("nid").disabled = false;
+    document.getElementById("nname").value = ""; document.getElementById("nzone").value = "";
+    document.getElementById("btnSaveGuard").innerText = i18n[window.currentLang].btnSaveGuard; document.getElementById("btnCancelEdit").classList.add("hidden");
+};
+window.deleteGuard = async (id) => { if(confirm(i18n[window.currentLang].delConfirm)) { await deleteDoc(doc(db, 'guards', id)); } };
+
+function loadGuards() {
+    onSnapshot(collection(db, "guards"), s => {
+        window.allGuards = []; const b = document.getElementById("guardListBody"); b.innerHTML = "";
+        s.forEach(d => {
+            const g = d.data(); g.id = d.id; window.allGuards.push(g); let zSafe = g.zone ? g.zone.replace(/'/g, "\\'") : '';
+            b.innerHTML += `<tr><td><b>${g.id}</b></td><td>${g.name}</td><td>${g.zone || "--"}</td>
+            <td><button onclick="window.loadEdit('${g.id}','${g.name}','${zSafe}')" class="btn-warning" style="padding:5px 10px; font-size:11px; width:auto;">EDIT</button> 
+            <button onclick="window.deleteGuard('${d.id}')" class="btn-danger" style="padding:5px 10px; font-size:11px; width:auto;">DEL</button></td></tr>`;
+        });
+        window.generateDailyReport(); 
+    });
+}
+
+/* --- Face Authentication Logic --- */
+window.initGuardLogin = async () => {
+    const id = document.getElementById("gid").value.toUpperCase();
+    document.getElementById("gid").value = "";
+    const snap = await getDoc(doc(db, "guards", id));
+    if(snap.exists()) {
+        window.tempGuardData = snap.data(); window.tempGuardData.id = id;
+        document.getElementById("faceAuthModal").classList.remove("hidden");
+        const video = document.getElementById("cameraFeed");
+        try {
+            window.cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+            video.srcObject = window.cameraStream;
+        } catch (err) {
+            alert("Camera access is required for Face Verification.");
+            window.closeFaceAuth();
+        }
+    } else alert(window.currentLang === "en" ? "Invalid ID Number." : "ভুল আইডি নম্বর।");
+};
+
+window.closeFaceAuth = () => {
+    document.getElementById("faceAuthModal").classList.add("hidden");
+    if(window.cameraStream) window.cameraStream.getTracks().forEach(t => t.stop());
+};
+
+window.verifyFace = () => {
+    const video = document.getElementById("cameraFeed");
+    const canvas = document.getElementById("photoCanvas");
+    canvas.width = 150; canvas.height = 150;
+    const ctx = canvas.getContext("2d");
+    
+    const minDim = Math.min(video.videoWidth, video.videoHeight);
+    const sx = (video.videoWidth - minDim) / 2; const sy = (video.videoHeight - minDim) / 2;
+    ctx.drawImage(video, sx, sy, minDim, minDim, 0, 0, 150, 150);
+    
+    window.capturedFaceBase64 = canvas.toDataURL("image/jpeg", 0.5); 
+    window.closeFaceAuth();
+    proceedToGuardPanel();
+};
+
+function proceedToGuardPanel() {
+    window.activeGuard = window.tempGuardData;
+    document.getElementById("gname").innerText = window.activeGuard.name;
+    document.getElementById("gzone").innerText = "Assigned Zone: " + (window.activeGuard.zone || "All");
+    
+    const imgEl = document.getElementById("guardSelfie");
+    imgEl.src = window.capturedFaceBase64; imgEl.style.display = "block";
+
+    window.showPanel("guardPanel");
+    
+    onSnapshot(query(collection(db, "attendance"), orderBy("timestamp", "desc")), s => {
+        s.forEach(d => { if(d.data().guardId === window.activeGuard.id && d.data().outTime === "") {
+            window.activeShiftId = d.id; document.getElementById("btnIn").classList.add("hidden"); document.getElementById("btnOut").classList.remove("hidden"); startGPS();
+        }});
+    });
+}
+
+/* --- PHOTO VIEWER MODAL LOGIC --- */
+window.viewPhoto = function(imgSrc) {
+    document.getElementById("fullSizeImage").src = imgSrc;
+    document.getElementById("photoViewerModal").classList.remove("hidden");
+};
+
+window.closePhotoViewer = function() {
+    document.getElementById("photoViewerModal").classList.add("hidden");
+    document.getElementById("fullSizeImage").src = "";
+};
+
+/* --- Attendance, Maps & Logic --- */
+window.generateDailyReport = async () => {
+    const targetDate = document.getElementById('filterDate').value; 
+    if(!targetDate || window.allGuards.length === 0) return;
+
+    const attQuery = query(collection(db, "attendance"), where("isoDate", "==", targetDate));
+    const attSnap = await getDocs(attQuery);
+    let attMap = {}; attSnap.forEach(d => { let data = d.data(); data.docId = d.id; attMap[data.guardId] = data; });
+
+    window.dailyReportData = []; const tbody = document.getElementById("attendanceBody"); tbody.innerHTML = "";
+    const lang = window.currentLang; 
+    const txtPresent = lang === "en" ? "PRESENT" : "উপস্থিত"; const txtAbsent = lang === "en" ? "ABSENT" : "অনুপস্থিত"; const txtLive = lang === "en" ? "On Duty" : "ডিউটিতে";
+
+    window.allGuards.forEach(guard => {
+        const record = attMap[guard.id]; 
+        let statusHtml, inTime, outTime, totalTime, checkInLocHtml, lastLocHtml, actionHtml, photoHtml;
+
+        if (record) {
+            let isLive = record.outTime === ""; statusHtml = `<span class="badge badge-present">${txtPresent}</span>`;
+            inTime = record.inTime; outTime = isLive ? "--" : record.outTime; totalTime = record.totalTime || (isLive ? txtLive : "--");
+            
+            // Interactive Photo Column
+            if(record.photo) {
+                photoHtml = `<img src="${record.photo}" onclick="window.viewPhoto('${record.photo}')" class="photo-thumbnail" title="Click to view full image">`;
+            } else {
+                photoHtml = "<span style='color:var(--text-sub); font-size: 11px;'>No Photo</span>";
+            }
+
+            if (record.checkInLat && record.checkInLon) checkInLocHtml = `<button onclick="window.openMap(${record.checkInLat}, ${record.checkInLon})" class="btn-dark" style="padding:4px 10px; width:auto; font-size:11px;">📍 IN MAP</button>`;
+            else checkInLocHtml = "--";
+
+            if (isLive) lastLocHtml = `<button onclick="window.trackLive('${guard.id}')" class="btn-primary" style="padding:4px 10px; width:auto; font-size:11px;">🌍 LIVE MAP</button>`;
+            else if (record.lastLat && record.lastLon) lastLocHtml = `<button onclick="window.openMap(${record.lastLat}, ${record.lastLon})" class="btn-warning" style="padding:4px 10px; width:auto; color:black; font-size:11px;">🏁 LAST LOC</button>`;
+            else lastLocHtml = "--";
+
+            actionHtml = `<button onclick="window.deleteAttendanceRecord('${record.docId}')" class="btn-danger" style="padding:5px 12px; width:auto; font-size:11px;">DEL</button>`;
+
+            window.dailyReportData.push({ Status: txtPresent, Photo: (record.photo ? "Captured" : "None"), ID: guard.id, Name: guard.name, Date: targetDate, In: inTime, Out: outTime, TotalTime: totalTime, CheckInGPS: (record.checkInLat ? `${record.checkInLat}, ${record.checkInLon}` : "--"), LastGPS: (record.lastLat ? `${record.lastLat}, ${record.lastLon}` : (isLive ? "Live" : "--")) });
+        } else {
+            statusHtml = `<span class="badge badge-absent">${txtAbsent}</span>`;
+            inTime = "--"; outTime = "--"; totalTime = "--"; checkInLocHtml = "--"; lastLocHtml = "--"; actionHtml = "--"; photoHtml = "--";
+            window.dailyReportData.push({ Status: txtAbsent, Photo: "--", ID: guard.id, Name: guard.name, Date: targetDate, In: "--", Out: "--", TotalTime: "--", CheckInGPS: "--", LastGPS: "--" });
+        }
+
+        tbody.innerHTML += `<tr>
+            <td>${statusHtml}</td><td>${photoHtml}</td>
+            <td><b>${guard.name}</b><br><span style="font-size:11px; color:var(--text-sub)">${guard.id}</span></td>
+            <td>${inTime}</td><td>${outTime}</td><td><b>${totalTime}</b></td><td>${checkInLocHtml}</td><td>${lastLocHtml}</td><td>${actionHtml}</td>
+        </tr>`;
+    });
+};
+
+window.deleteAttendanceRecord = async (docId) => {
+    if(confirm(i18n[window.currentLang].delAttConfirm)) { await deleteDoc(doc(db, "attendance", docId)); window.generateDailyReport(); }
+};
+
+window.downloadDailyReport = () => {
+    if(window.dailyReportData.length === 0) return alert("No data available.");
+    const dateStr = document.getElementById('filterDate').value;
+    let csv = `Daily Security Report - ${dateStr}\n\nStatus,Photo Verified,Guard ID,Guard Name,Check In,Check Out,Total Time,Check-In GPS,Last/Live GPS\n`;
+    window.dailyReportData.forEach(r => { csv += `${r.Status},${r.Photo},${r.ID},"${r.Name}",${r.In},${r.Out},${r.TotalTime},"${r.CheckInGPS}","${r.LastGPS}"\n`; });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob); link.download = `SecureGuard_Report_${dateStr}.csv`; link.click();
+};
+
+const executeArchive = async (days, typeLabel) => {
+    const t = i18n[window.currentLang]; const today = new Date(); const cutoffDate = new Date(today.setDate(today.getDate() - days)); const cutoffIsoDate = cutoffDate.toISOString().split('T')[0];
+    try {
+        const oldDataQuery = query(collection(db, "attendance"), where("isoDate", "<", cutoffIsoDate)); const oldDataSnap = await getDocs(oldDataQuery);
+        if (oldDataSnap.empty) { alert(days === 7 ? t.msgNoWeekData : t.msgNoOldData); return; }
+        const confirmMsg = (days === 7 ? t.msgArchiveWeekConfirm : t.msgArchiveConfirm).replace("{count}", oldDataSnap.size);
+        if (confirm(confirmMsg)) {
+            let csv = `${typeLabel} Archive Report (Prior to ${cutoffIsoDate})\n\nGuard ID,Name,Date,Check In,Check Out,Total Time,Check-In GPS,Last GPS\n`;
+            oldDataSnap.forEach(docSnap => {
+                const d = docSnap.data(); const inGps = d.checkInLat ? `${d.checkInLat},${d.checkInLon}` : "--"; const outGps = d.lastLat ? `${d.lastLat},${d.lastLon}` : "--";
+                csv += `${d.guardId},"${d.name}",${d.date},${d.inTime},${d.outTime || "--"},${d.totalTime || "--"},"${inGps}","${outGps}"\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `SecureGuard_${typeLabel}_Archive_Pre_${cutoffIsoDate}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            let deletePromises = []; oldDataSnap.forEach(docSnap => { deletePromises.push(deleteDoc(doc(db, "attendance", docSnap.id))); });
+            await Promise.all(deletePromises); alert(t.msgArchiveSuccess); window.generateDailyReport(); 
+        }
+    } catch (error) { alert("Cleanup Error: " + error.message); }
+};
+window.cleanWeeklyData = () => executeArchive(7, "Weekly"); window.cleanOldData = () => executeArchive(180, "6-Month");
+
+function listenToTracking() { onSnapshot(collection(db, "tracking"), s => { window.liveGuardLocations = {}; s.forEach(d => window.liveGuardLocations[d.id] = d.data()); }); }
+window.trackLive = (id) => { const l = window.liveGuardLocations[id]; if(l) window.openMap(l.lat, l.lon); else alert("Live GPS signal currently lost."); };
+window.openMap = (lat, lon) => { window.open(`https://www.google.com/maps/search/?api=1&query=${lat},${lon}`, '_blank'); };
+
+window.startShift = async () => {
+    document.getElementById("liveLoc").innerText = "📍 Getting Initial Location...";
+    navigator.geolocation.getCurrentPosition(async p => {
+        const lat = p.coords.latitude, lon = p.coords.longitude; const now = new Date();
+        const ref = await addDoc(collection(db, "attendance"), { 
+            guardId: window.activeGuard.id, name: window.activeGuard.name, 
+            date: now.toLocaleDateString(), isoDate: now.toISOString().split('T')[0], 
+            inTime: now.toLocaleTimeString(), startTime: Date.now(), outTime: "", totalTime: "", 
+            checkInLat: lat, checkInLon: lon, photo: window.capturedFaceBase64, // SAVE PHOTO TO DB
+            timestamp: serverTimestamp() 
+        });
+        window.activeShiftId = ref.id; document.getElementById("btnIn").classList.add("hidden"); document.getElementById("btnOut").classList.remove("hidden");
+        localStorage.setItem("persistentTrackId", window.activeGuard.id); startGPS(); 
+    }, err => { alert("GPS must be allowed to check in."); document.getElementById("liveLoc").innerText = "❌ Location Access Denied"; }, {enableHighAccuracy: true});
+};
+
+function startGPS() {
+    const id = localStorage.getItem("persistentTrackId"); if(!id) return;
+    document.getElementById("liveLoc").innerText = "📍 Tracking active...";
+    window.watchId = navigator.geolocation.watchPosition(p => {
+        const lat = p.coords.latitude, lon = p.coords.longitude;
+        localStorage.setItem("lastLat", lat); localStorage.setItem("lastLon", lon);
+        setDoc(doc(db, "tracking", id), { lat: lat, lon: lon, timestamp: serverTimestamp() });
+        if(document.getElementById("liveLoc")) { document.getElementById("liveLoc").style.color = "var(--success)"; document.getElementById("liveLoc").innerText = `📡 LIVE TRACKING: ${lat.toFixed(4)}, ${lon.toFixed(4)}`; }
+    }, err => {}, {enableHighAccuracy: true, timeout: 10000, maximumAge: 0});
+}
+
+window.endShift = async () => {
+    if(!window.activeShiftId) return;
+    document.getElementById("liveLoc").innerText = "📍 Finalizing Checkout...";
+    const sDoc = await getDoc(doc(db, "attendance", window.activeShiftId));
+    const diff = Date.now() - sDoc.data().startTime; const dur = Math.floor(diff/3600000) + "h " + Math.floor((diff%3600000)/60000) + "m";
+    const lLat = parseFloat(localStorage.getItem("lastLat")); const lLon = parseFloat(localStorage.getItem("lastLon"));
+    let updateData = { outTime: new Date().toLocaleTimeString(), totalTime: dur };
+    if(lLat && lLon) { updateData.lastLat = lLat; updateData.lastLon = lLon; } 
+    await updateDoc(doc(db, "attendance", window.activeShiftId), updateData);
+    await deleteDoc(doc(db, "tracking", window.activeGuard.id));
+    localStorage.removeItem("persistentTrackId"); localStorage.removeItem("lastLat"); localStorage.removeItem("lastLon");
+    if(window.watchId) navigator.geolocation.clearWatch(window.watchId); location.reload();
+};
+
+const initDateStr = new Date().toISOString().split('T')[0];
+document.getElementById('filterDate').value = initDateStr;
+
+window.showPanel = (id) => { document.getElementById("login").classList.add("hidden"); document.getElementById("adminPanel").classList.add("hidden"); document.getElementById("guardPanel").classList.add("hidden"); document.getElementById(id).classList.remove("hidden"); };
+window.logout = () => signOut(auth).then(() => location.reload());
+
+window.applyLanguage();
+if(localStorage.getItem("persistentTrackId")) startGPS();
+</script>
+</body>
+</html>

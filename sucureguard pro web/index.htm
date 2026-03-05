@@ -7,7 +7,822 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
     
-    <script defer src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+    <style>
+        /* --- HIGH-CONTRAST AESTHETIC GLASS UI --- */
+        :root { 
+            --primary: #0f172a; --accent: #2563eb; --accent-hover: #1d4ed8; 
+            --text-main: #020617; --text-sub: #334155; 
+            --success: #059669; --danger: #dc2626; --warning: #d97706;
+            --glass-bg: rgba(255, 255, 255, 0.95);
+        }
+
+        body { 
+            margin:0; padding-top: 100px; 
+            font-family: 'Poppins', 'Hind Siliguri', sans-serif; 
+            color: var(--text-main);
+            background: linear-gradient(rgba(226, 232, 240, 0.85), rgba(241, 245, 249, 0.85)), url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop') no-repeat center center fixed;
+            background-size: cover; min-height: 100vh;
+        }
+
+        .glass-card { background: var(--glass-bg); backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 1); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1); border-radius: 20px; }
+
+        /* FLOATING NAVBAR */
+        .navbar-wrapper { position: fixed; top: 15px; left: 0; width: 100%; z-index: 1000; display: flex; justify-content: center; pointer-events: none; }
+        .navbar { pointer-events: auto; display: flex; justify-content: space-between; align-items: center; width: 90%; max-width: 1200px; padding: 10px 30px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-radius: 50px; border: 1px solid rgba(255,255,255,0.6); }
+        .nav-brand { font-size: 22px; font-weight: 800; color: var(--primary); display: flex; align-items: center; letter-spacing: -0.5px; cursor: pointer;}
+        
+        .nav-links-container { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; justify-content: flex-end;}
+        .nav-links { display: flex; gap: 5px; align-items: center; }
+        
+        .nav-btn { width: auto; background: transparent; border: none; font-weight: 600; color: var(--text-main); cursor: pointer; padding: 8px 15px; border-radius: 50px; transition: 0.3s; font-family: inherit;}
+        .nav-btn:hover { background: rgba(37, 99, 235, 0.1); color: var(--accent); }
+        
+        .lang-group { display: flex; gap: 2px; background: #f1f5f9; padding: 4px; border-radius: 50px; border: 1px solid #cbd5e1; }
+        .lang-btn { width: auto; background: transparent; border: none; padding: 6px 12px; border-radius: 50px; font-weight: 700; font-size: 12px; cursor: pointer; transition: 0.3s; color: var(--text-sub); }
+        .lang-btn.active { background: var(--accent); color: white; box-shadow: 0 2px 10px rgba(37, 99, 235, 0.3); }
+        
+        .nav-btn-primary { width: auto; background: var(--primary); color: white; border-radius: 50px; padding: 10px 25px; border: none; font-weight: 600; cursor: pointer; transition: 0.3s;}
+        .nav-btn-primary:hover { background: #000; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.2);}
+
+        h1 { font-size: 46px; font-weight: 800; letter-spacing: -1px; line-height: 1.2; margin-top: 0;}
+        h2 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin-top: 0; }
+        h3 { font-size: 20px; font-weight: 700; color: var(--accent); margin-top: 0; }
+        p { line-height: 1.6; color: var(--text-sub); font-weight: 500; }
+        
+        .container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
+        .hidden { display: none !important; }
+        
+        input, select, textarea { padding: 15px; margin: 10px 0; width: 100%; box-sizing: border-box; font-size: 15px; background: #f8fafc; border: 2px solid #cbd5e1; border-radius: 10px; transition: 0.3s; font-family: inherit; font-weight: 600; }
+        input:focus, select:focus, textarea:focus { border-color: var(--accent); outline: none; background: white; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);}
+        
+        .form-btn, .action-btn { padding: 15px 20px; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; width: 100%; transition: 0.3s; font-size: 15px; font-family: inherit; letter-spacing: 0.5px;}
+        .btn-primary { background: var(--accent); color: white; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); }
+        .btn-primary:hover { transform: translateY(-2px); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-warning { background: var(--warning); color: white; }
+        .btn-dark { background: var(--primary); color: white; }
+
+        .hero-section { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 40px; padding: 20px 0; }
+        .hero-text { flex: 1.2; min-width: 300px; }
+        .hero-card { flex: 0.8; min-width: 350px; padding: 40px; }
+        
+        .auth-wrapper { display: flex; max-width: 900px; margin: 2vh auto; overflow: hidden; flex-wrap: wrap; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.15); }
+        .auth-info { flex: 1; min-width: 300px; padding: 50px; background: linear-gradient(135deg, #1e293b, #0f172a); color: white; }
+        .auth-forms { flex: 1; min-width: 300px; padding: 50px; background: white; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05);}
+        th, td { border-bottom: 1px solid #e2e8f0; padding: 15px; text-align: left; font-weight: 500;}
+        th { background: #f1f5f9; color: var(--primary); font-weight: 800; text-transform: uppercase; font-size: 12px;}
+        
+        .badge { padding: 6px 12px; border-radius: 50px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+        .badge-present { background: #dcfce7; color: #059669; }
+        .badge-absent { background: #fee2e2; color: #ef4444; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); z-index: 9999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
+        .camera-container { position: relative; width: 220px; height: 220px; margin: 20px auto; border-radius: 50%; overflow: hidden; border: 4px solid var(--accent); box-shadow: 0 0 30px rgba(37, 99, 235, 0.4); background: #000; }
+        
+        /* Video and Snapshot Images */
+        .camera-container video, .camera-container img { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        
+        .scan-line { position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: #10b981; box-shadow: 0 0 15px #10b981; animation: scan 2s infinite linear; }
+        @keyframes scan { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
+
+        .photo-thumbnail { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; border: 2px solid #cbd5e1; cursor: pointer; transition: transform 0.2s ease; }
+        .photo-thumbnail:hover { transform: scale(1.5); box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 10; position: relative;}
+
+        @media (max-width: 850px) { 
+            .navbar { flex-direction: column; border-radius: 20px; padding: 15px;} 
+            .nav-links-container { justify-content: center; margin-top: 10px;}
+            body { padding-top: 150px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="navbar-wrapper">
+    <nav class="navbar">
+        <div class="nav-brand" onclick="window.showPage('landingPage')">🛡️ SecureGuard Pro</div>
+        <div class="nav-links-container">
+            <div class="nav-links" id="publicNavLinks">
+                <button type="button" class="nav-btn" onclick="window.showPage('landingPage')" id="t_navHome">Home</button>
+                <button type="button" class="nav-btn" onclick="window.showPage('aboutPage')" id="t_navAbout">About Us</button>
+            </div>
+
+            <div class="lang-group">
+                <button type="button" class="lang-btn active" id="btn-en" onclick="window.setLanguage('en')">EN</button>
+                <button type="button" class="lang-btn" id="btn-bn" onclick="window.setLanguage('bn')">বাংলা</button>
+                <button type="button" class="lang-btn" id="btn-hi" onclick="window.setLanguage('hi')">हिन्दी</button>
+            </div>
+            
+            <button type="button" class="nav-btn-primary" onclick="window.showPage('staffAuthPage')" id="t_navStaff">STAFF LOGIN</button>
+        </div>
+    </nav>
+</div>
+
+<div id="landingPage" class="container">
+    <div class="hero-section">
+        <div class="hero-text glass-card" style="padding: 40px; border:none; background: transparent; box-shadow: none;">
+            <h1 id="t_heroHeadline">Elite Professional Security for Your Peace of Mind.</h1>
+            <p id="t_heroSub" style="font-size: 18px; margin-bottom: 30px;">
+                We provide highly trained professional personnel for corporate, residential, and event security. Request a certified guard today!
+            </p>
+            <div style="display: flex; gap: 15px; flex-direction: column;">
+                <p style="font-weight: 700; color: var(--success); margin: 0; font-size: 16px;" id="t_feat1">✓ Verified Guard Deployment</p>
+                <p style="font-weight: 700; color: var(--success); margin: 0; font-size: 16px;" id="t_feat2">✓ GPS Live Tracking enabled</p>
+                <p style="font-weight: 700; color: var(--success); margin: 0; font-size: 16px;" id="t_feat3">✓ 24/7 Command Center Support</p>
+            </div>
+        </div>
+
+        <div class="hero-card glass-card">
+            <h2 style="color: var(--primary); margin-bottom: 5px;" id="t_formTitle">Book a Service</h2>
+            <p style="font-size: 13px; color: var(--text-sub); font-weight: 600; margin-bottom: 20px;" id="t_formSub">Fill out the details below to request a service.</p>
+            
+            <form id="mainBookingForm" onsubmit="window.submitBookingForm(event)">
+                <input type="text" id="bookName" placeholder="Your Full Name" required>
+                <input type="tel" id="bookPhone" placeholder="Mobile Number" required>
+                <input type="email" id="bookEmail" placeholder="Email Address (For Confirmation)" required>
+                
+                <select id="bookPurpose" required>
+                    <option value="" disabled selected id="t_optSelect">Select Security Purpose</option>
+                    <option value="Event Security" id="t_opt1">Event / Party Security</option>
+                    <option value="Corporate Security" id="t_opt2">Corporate / Office Security</option>
+                    <option value="Personal Bodyguard" id="t_opt3">Personal Bodyguard (Bouncer)</option>
+                    <option value="Residential Complex" id="t_opt4">Residential Complex Security</option>
+                </select>
+                
+                <input type="text" id="bookLocation" placeholder="Full Service Location / Address" required>
+                <textarea id="bookReq" rows="3" placeholder="Specific Requirements (e.g. Need 2 professional guards for 3 days...)"></textarea>
+                
+                <button type="submit" class="form-btn btn-primary" id="btnSubmitBooking" style="margin-top: 15px;">SUBMIT BOOKING REQUEST</button>
+                
+                <p style="font-size: 13px; color: var(--danger); font-weight: 700; margin-top: 15px; text-align: center; border: 1px dashed var(--danger); padding: 10px; border-radius: 8px;" id="t_formNote">
+                    Note: After submitting this form, you must email our support team at somenathbose869@gmail.com
+                </p>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="aboutPage" class="container hidden">
+    <div class="glass-card" style="padding: 50px; text-align: center;">
+        <h1 id="t_aboutTitle" style="color: var(--primary); margin-bottom: 10px;">About SecureGuard Pro</h1>
+        <p id="t_aboutSub" style="font-size: 18px; max-width: 800px; margin: 0 auto;">We are a modern, technology-driven security agency dedicated to providing transparent and highly professional security services.</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 30px;">
+            <div style="padding: 30px; background: rgba(255,255,255,0.6); border-radius: 16px; border: 1px solid rgba(255,255,255,0.8);">
+                <h2 id="t_ab1Title" style="color: var(--accent);">Our Mission</h2>
+                <p id="t_ab1Desc">To deliver unparalleled security services by combining highly trained professional personnel with GPS tracking technologies.</p>
+            </div>
+            <div style="padding: 30px; background: rgba(255,255,255,0.6); border-radius: 16px; border: 1px solid rgba(255,255,255,0.8);">
+                <h2 id="t_ab2Title" style="color: var(--success);">Why Choose Us?</h2>
+                <p id="t_ab2Desc" style="text-align: left;">• Photo Verification: Every guard's attendance is verified by Camera Capture.<br>• Live Tracking: We track guard deployments in real-time.<br>• Trained Professionals: We provide well-mannered, unarmed professional guards.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="staffAuthPage" class="container hidden">
+    <div class="auth-wrapper">
+        <div class="auth-info" style="background: linear-gradient(135deg, #0284c7, #0ea5e9);">
+            <h2 id="t_sysLogin">System Portal</h2>
+            <p id="t_sysDesc">Authorized operational personnel only. Photo Verification strictly enforced.</p>
+            <br>
+            <button type="button" onclick="window.showPage('landingPage')" class="nav-btn" style="background: rgba(0,0,0,0.3); color: white; margin-top: 40px;" id="t_btnBackHome">← Back to Home</button>
+        </div>
+
+        <div class="auth-forms">
+            <h3 style="color: var(--primary);" id="t_gLoginTitle">Guard Terminal</h3>
+            <form onsubmit="window.guardLogin(event);" style="margin-bottom: 30px;">
+                <input id="gid" placeholder="Enter Guard ID Number" required autocomplete="off">
+                <button type="submit" class="form-btn btn-primary" id="t_btnAccess">ACCESS TERMINAL</button>
+            </form>
+            <hr style="border:0; border-top:1px solid #e2e8f0; margin:25px 0;">
+            <h3 style="color: var(--primary);" id="t_aLoginTitle">Admin Dashboard</h3>
+            <form onsubmit="window.adminLogin(event);">
+                <input id="auser" type="email" placeholder="Admin Email" required>
+                <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                    <input id="apass" type="password" placeholder="Password" required style="padding-right: 40px;">
+                    <button type="button" onclick="window.togglePassword('apass', this)" style="position: absolute; right: 10px; background: none; border: none; width: auto; padding: 0; font-size: 18px; cursor: pointer;">👁️</button>
+                </div>
+                <button type="submit" class="form-btn btn-dark" id="t_btnLogin">AUTHORIZE ADMIN</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="adminPanel" class="container hidden" style="max-width: 1400px;">
+    <div class="glass-card" style="display: flex; justify-content: space-between; align-items: center; padding: 20px 30px; margin-bottom: 20px;">
+        <div>
+            <h2 style="margin:0; color: var(--primary);" id="t_dashTitle">Global Dashboard</h2>
+            <p id="adminIdentity" style="font-size: 13px; font-weight: bold; color: var(--accent); margin: 5px 0 0 0;"></p>
+        </div>
+        <button type="button" onclick="window.logout()" class="action-btn btn-danger" style="width: auto; border-radius: 50px;" id="t_btnDisconnect">DISCONNECT</button>
+    </div>
+
+    <div class="glass-card" style="padding: 30px; margin-bottom: 20px;">
+        <h3 style="color: var(--success); margin-bottom: 15px;" id="t_bookTitle">📥 Client Booking Requests</h3>
+        <div style="overflow-x:auto;">
+            <table>
+                <thead><tr><th id="thB1">DATE</th><th id="thB2">CLIENT NAME</th><th id="thB3">CONTACT INFO</th><th id="thB4">PURPOSE</th><th id="thB5">LOCATION</th><th id="thB6">DETAILS</th><th>ACTION</th></tr></thead>
+                <tbody id="bookingsBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="glass-card" style="padding: 30px; margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; flex-wrap:wrap; margin-bottom: 15px; gap: 10px;">
+            <h3 style="margin: 0; color: var(--accent);" id="t_attTitle">Daily Attendance Library</h3>
+            <div style="display: flex; gap: 10px;">
+                <button type="button" onclick="window.clearOldAttendance()" class="action-btn btn-danger" style="width: auto; padding: 8px 15px; font-size: 13px; background: transparent; color: var(--danger); border: 2px solid var(--danger);">🗑️ CLEAR > 7 DAYS</button>
+                <button type="button" onclick="window.downloadDailyReport()" class="action-btn btn-success" style="width: auto; padding: 8px 15px; font-size: 13px;" id="t_btnExport">📥 EXCEL</button>
+            </div>
+        </div>
+        <input type="date" id="filterDate" onchange="window.generateDailyReport()" style="max-width: 250px; border-color: var(--accent);">
+        <div style="overflow-x:auto; margin-top: 15px;">
+            <table>
+                <thead>
+                    <tr>
+                        <th id="th1">STATUS</th>
+                        <th id="th2">NAME (ID)</th>
+                        <th id="th3">IN TIME</th>
+                        <th id="th4">IN PHOTO</th>
+                        <th id="th5">OUT TIME</th>
+                        <th id="th6">OUT PHOTO</th>
+                        <th id="th7">TOTAL TIME</th>
+                        <th id="th8">IN LOC</th>
+                        <th id="th9">OUT LOC</th>
+                        <th id="th10">ACTION</th>
+                    </tr>
+                </thead>
+                <tbody id="attendanceBody"></tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+        <div class="glass-card" style="flex: 2; min-width: 300px; padding: 30px;">
+            <h3 id="t_regTitle">Guard Personnel Roster</h3>
+            <div style="display:flex; gap:10px; flex-wrap: wrap;">
+                <input id="nid" placeholder="Personnel ID" style="flex:1;">
+                <input id="nname" placeholder="Legal Name" style="flex:2;">
+                <input id="nzone" placeholder="Assigned Zone" style="flex:1.5;">
+                <button type="button" onclick="window.saveGuard()" class="action-btn btn-success" id="btnSaveGuard" style="width:auto;">SAVE</button>
+                <button type="button" onclick="window.cancelEdit()" class="action-btn btn-danger hidden" id="btnCancelEdit" style="width:auto;">CANCEL</button>
+            </div>
+            <div style="overflow-x:auto;"><table style="margin-top:15px;"><thead><tr><th>ID</th><th>NAME</th><th>ZONE</th><th>ACTION</th></tr></thead><tbody id="guardListBody"></tbody></table></div>
+        </div>
+
+        <div class="glass-card" style="flex: 1; min-width: 300px; padding: 30px;">
+            <h3 id="t_adminMgtTitle">Co-Admin Management</h3>
+            <input id="newAdminEmail" type="email" placeholder="New Admin Email">
+            <div class="pwd-container" style="position:relative; margin-bottom:10px;">
+                <input id="newAdminPass" type="password" placeholder="Password (min 6 chars)">
+                <button type="button" onclick="window.togglePassword('newAdminPass', this)" style="position: absolute; right: 10px; top: 15px; background: none; border: none; cursor: pointer;">👁️</button>
+            </div>
+            <button type="button" onclick="window.addNewAdmin()" class="form-btn btn-dark" id="t_btnAddNewAdmin">ADD CO-ADMIN</button>
+            <table style="margin-top:10px;"><tbody id="adminListBody"></tbody></table>
+        </div>
+    </div>
+</div>
+
+<div id="guardPanel" class="container hidden">
+    <div class="glass-card" style="max-width: 500px; margin: 5vh auto; text-align: center; border-top: 6px solid var(--accent); padding: 40px;">
+        <img id="guardSelfie" src="" style="width: 110px; height: 110px; border-radius: 50%; object-fit: cover; margin: 0 auto 15px auto; border: 4px solid var(--accent); display: none;">
+        <h2 id="gname" style="font-size: 28px; margin-top: 0; color: var(--primary);"></h2>
+        <p id="gzone" style="font-size: 16px; margin-top:-5px; font-weight: 700; color: var(--accent);"></p>
+        
+        <div style="background: #f1f5f9; padding:20px; border-radius:12px; margin: 25px 0; border: 1px solid #cbd5e1;">
+            <p id="liveLoc" style="font-weight:700; color: var(--text-main); margin:0;">📡 Status: Ready</p>
+        </div>
+        <button type="button" onclick="window.initCameraAction('checkin')" class="action-btn btn-primary" id="btnIn" style="height:60px; font-size:16px; margin-bottom: 15px;">START PATROL (CHECK IN)</button>
+        <button type="button" onclick="window.initCameraAction('checkout')" class="action-btn btn-danger hidden" id="btnOut" style="height:60px; font-size:16px;">END PATROL (CHECK OUT)</button>
+        <button type="button" onclick="window.logout()" class="nav-btn" style="background:transparent; color: var(--danger); margin-top: 20px; font-size: 14px; text-decoration: underline;" id="t_btnLogoutSession">Logout Session</button>
+    </div>
+</div>
+
+<div id="faceAuthModal" class="modal-overlay hidden">
+    <div class="glass-card" style="width: 320px; text-align: center; padding: 30px; background: white;">
+        <h3 style="color: var(--primary); margin-bottom: 5px;" id="t_faceTitle">Photo Scan</h3>
+        <p style="font-size: 12px; color: var(--text-sub); font-weight: 600;" id="t_faceSubtitle">Please look straight into the camera.</p>
+        
+        <div class="camera-container" id="cameraContainer">
+            <video id="cameraFeed" autoplay muted playsinline></video>
+            <img id="capturedSnapshot" style="display:none; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);">
+            <div class="scan-line" id="scanLine"></div>
+        </div>
+
+        <div id="cameraControls">
+            <button type="button" onclick="window.takeSnapshot()" class="action-btn btn-primary" style="margin-bottom: 10px; font-size:16px;" id="btnCapture">📸 CAPTURE PHOTO</button>
+            <button type="button" onclick="window.closeFaceAuth()" class="action-btn btn-danger" style="background: transparent; color: var(--danger); border: 1.5px solid var(--danger);" id="t_btnCancelFace1">CANCEL</button>
+        </div>
+
+        <div id="verifyControls" class="hidden">
+            <button type="button" onclick="window.processPhoto()" class="action-btn btn-success" style="margin-bottom: 10px; font-size:14px;" id="btnScanFace">✅ SAVE & PROCEED</button>
+            <button type="button" onclick="window.retakePhoto()" class="action-btn btn-warning" style="margin-bottom: 10px; font-size:14px;" id="btnRetake">🔄 RETAKE</button>
+            <button type="button" onclick="window.closeFaceAuth()" class="action-btn btn-danger" style="background: transparent; color: var(--danger); border: 1.5px solid var(--danger);" id="t_btnCancelFace2">CANCEL</button>
+        </div>
+
+        <canvas id="photoCanvas" style="display:none;"></canvas>
+    </div>
+</div>
+
+<div id="photoViewerModal" class="modal-overlay hidden" style="z-index: 10005;" onclick="window.closePhotoViewer()">
+    <div style="position: relative; max-width: 90%; max-height: 90%;" onclick="event.stopPropagation()">
+        <img id="fullSizeImage" src="" style="max-width: 100%; max-height: 80vh; border-radius: 12px; border: 4px solid white;">
+        <button type="button" onclick="window.closePhotoViewer()" style="position: absolute; top: -15px; right: -15px; background: var(--danger); color: white; border: none; border-radius: 50%; width: 40px; height: 40px; font-weight: bold; cursor: pointer;">X</button>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+import { getFirestore, collection, addDoc, doc, setDoc, deleteDoc, updateDoc, onSnapshot, query, orderBy, serverTimestamp, getDoc, getDocs, where } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAkNJ-yCLwcEDaJOeXY6PjyY7RYIXL7xVk",
+    authDomain: "guard-pro-4fac8.firebaseapp.com",
+    projectId: "guard-pro-4fac8",
+    storageBucket: "guard-pro-4fac8.firebasestorage.app"
+};
+
+const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
+const secondaryApp = initializeApp(firebaseConfig, "Secondary"); const secondaryAuth = getAuth(secondaryApp);
+
+window.allGuards = []; window.dailyReportData = []; window.cameraStream = null; 
+
+// ==========================================
+// EMAILJS CONFIGURATION
+emailjs.init({ publicKey: "kShGa3LnQigG0Bnjm" }); 
+// ==========================================
+
+window.showPage = (pageId) => {
+    ['landingPage', 'aboutPage', 'staffAuthPage', 'adminPanel', 'guardPanel'].forEach(id => { document.getElementById(id).classList.add("hidden"); });
+    document.getElementById(pageId).classList.remove("hidden");
+    
+    if(pageId === 'adminPanel' || pageId === 'guardPanel') {
+        document.getElementById("publicNavLinks").classList.add("hidden");
+        document.getElementById("t_navStaff").classList.add("hidden");
+    } else {
+        document.getElementById("publicNavLinks").classList.remove("hidden");
+        document.getElementById("t_navStaff").classList.remove("hidden");
+    }
+};
+
+const i18n = {
+    en: { 
+        navHome: "Home", navAbout: "About Us", navStaff: "STAFF LOGIN", btnSubmitBooking: "SUBMIT BOOKING REQUEST",
+        heroHeadline: "Elite Professional Security for Your Peace of Mind.", heroSub: "We provide highly trained professional personnel for corporate, residential, and event security.",
+        feat1: "✓ Verified Guard Deployment", feat2: "✓ GPS Live Tracking enabled", feat3: "✓ 24/7 Command Center Support",
+        formTitle: "Book a Service", formSub: "Fill out the details below to request a service.", optSelect: "Select Security Purpose", opt1: "Event / Party Security", opt2: "Corporate / Office Security", opt3: "Personal Bodyguard (Bouncer)", opt4: "Residential Complex Security",
+        aboutTitle: "About SecureGuard Pro", aboutSub: "We are a modern, technology-driven security agency dedicated to providing transparent and highly professional security services.", ab1Title: "Our Mission", ab1Desc: "To deliver unparalleled security services by combining highly trained professional personnel with GPS tracking technologies.", ab2Title: "Why Choose Us?", ab2Desc: "• Photo Verification: Every guard's attendance is verified by Camera Capture.<br>• Live Tracking: We track guard deployments in real-time.<br>• Trained Professionals: We provide well-mannered, unarmed professional guards.",
+        sysLogin: "System Portal", sysDesc: "Authorized operational personnel only. Photo Verification strictly enforced.", btnBackHome: "← Back to Home", gLoginTitle: "Guard Terminal", btnAccess: "ACCESS TERMINAL", aLoginTitle: "Admin Dashboard", btnLogin: "AUTHORIZE ADMIN",
+        dashTitle: "Global Dashboard", btnDisconnect: "DISCONNECT", bookTitle: "📥 Client Booking Requests", attTitle: "Daily Attendance Library", btnExport: "📥 EXCEL", regTitle: "Guard Personnel Roster", btnSaveGuard: "SAVE", adminMgtTitle: "Co-Admin Management", btnAddNewAdmin: "ADD CO-ADMIN",
+        btnIn: "START PATROL (CHECK IN)", btnOut: "END PATROL (CHECK OUT)", btnLogoutSession: "Logout Session",
+        faceTitleIn: "Check-In Scan", faceTitleOut: "Check-Out Scan", faceSubtitle: "Please look straight into the camera.", btnCapture: "📸 CAPTURE PHOTO", btnScanFace: "✅ SAVE & PROCEED", btnRetake: "🔄 RETAKE", btnCancelFace: "CANCEL",
+        thB1: "DATE", thB2: "CLIENT NAME", thB3: "CONTACT INFO", thB4: "PURPOSE", thB5: "LOCATION", thB6: "DETAILS",
+        th1: "STATUS", th2: "NAME (ID)", th3: "IN TIME", th4: "IN PHOTO", th5: "OUT TIME", th6: "OUT PHOTO", th7: "TOTAL TIME", th8: "IN LOC", th9: "OUT LOC", th10: "ACTION",
+        formNote: "Note: After submitting this form, you must email our support team at somenathbose869@gmail.com"
+    },
+    bn: { 
+        navHome: "হোম", navAbout: "আমাদের সম্পর্কে", navStaff: "স্টাফ লগইন", btnSubmitBooking: "বুকিং সাবমিট করুন",
+        heroHeadline: "আপনার মানসিক শান্তির জন্য সেরা পেশাদার নিরাপত্তা।", heroSub: "আমরা কর্পোরেট, আবাসিক এবং ইভেন্ট নিরাপত্তার জন্য উচ্চ প্রশিক্ষিত পেশাদার রক্ষী প্রদান করি।",
+        feat1: "✓ ভেরিফাইড গার্ড", feat2: "✓ রিয়েল-টাইম জিপিএস ট্র্যাকিং", feat3: "✓ ২৪/৭ কমান্ড সেন্টার সাপোর্ট",
+        formTitle: "সার্ভিস বুক করুন", formSub: "বুকিং করতে নিচের তথ্যগুলো পূরণ করুন।", optSelect: "নিরাপত্তার উদ্দেশ্য নির্বাচন করুন", opt1: "ইভেন্ট / পার্টি সিকিউরিটি", opt2: "কর্পোরেট / অফিস সিকিউরিটি", opt3: "বডিগার্ড (বাউন্সার)", opt4: "আবাসিক কমপ্লেক্স সিকিউরিটি",
+        aboutTitle: "আমাদের সম্পর্কে", aboutSub: "আমরা একটি আধুনিক, প্রযুক্তি-চালিত সিকিউরিটি এজেন্সি যা স্বচ্ছ এবং অত্যন্ত পেশাদার নিরাপত্তা প্রদান করতে নিবেদিত।", ab1Title: "আমাদের লক্ষ্য", ab1Desc: "উন্নত জিপিএস প্রযুক্তির সাথে প্রশিক্ষিত পেশাদার কর্মীদের সমন্বয় করে অতুলনীয় নিরাপত্তা সেবা প্রদান করা।", ab2Title: "আমাদের কেন বেছে নেবেন?", ab2Desc: "• ফটো ভেরিফিকেশন: ক্যামেরা ক্যাপচার দ্বারা গার্ডদের উপস্থিতি যাচাই করা হয়।<br>• লাইভ ট্র্যাকিং: আমরা রিয়েল-টাইমে গার্ডদের নজরদারি করি।<br>• প্রশিক্ষিত পেশাদার: আমরা মার্জিত এবং পেশাদার গার্ড প্রদান করি।",
+        sysLogin: "সিস্টেম পোর্টাল", sysDesc: "শুধুমাত্র অনুমোদিত স্টাফদের জন্য। ফটো ভেরিফিকেশন বাধ্যতামূলক।", btnBackHome: "← হোম পেজে ফিরে যান", gLoginTitle: "গার্ড টার্মিনাল", btnAccess: "প্রবেশ করুন", aLoginTitle: "অ্যাডমিন ড্যাশবোর্ড", btnLogin: "লগইন করুন",
+        dashTitle: "গ্লোবাল ড্যাশবোর্ড", btnDisconnect: "লগআউট", bookTitle: "📥 ক্লায়েন্ট বুকিং রিকোয়েস্ট", attTitle: "দৈনিক উপস্থিতি লাইব্রেরি", btnExport: "📥 এক্সেল", regTitle: "গার্ড পার্সোনেল রোস্টার", btnSaveGuard: "সেভ করুন", adminMgtTitle: "কো-অ্যাডমিন ম্যানেজমেন্ট", btnAddNewAdmin: "অ্যাডমিন যুক্ত করুন",
+        btnIn: "ডিউটি শুরু (চেক ইন)", btnOut: "ডিউটি শেষ (চেক আউট)", btnLogoutSession: "লগআউট করুন",
+        faceTitleIn: "চেক-ইন স্ক্যান", faceTitleOut: "চেক-আউট স্ক্যান", faceSubtitle: "দয়া করে ক্যামেরার দিকে সোজা তাকান।", btnCapture: "📸 ছবি তুলুন", btnScanFace: "✅ সেভ করুন", btnRetake: "🔄 আবার তুলুন", btnCancelFace: "বাতিল",
+        thB1: "তারিখ", thB2: "ক্লায়েন্টের নাম", thB3: "যোগাযোগের তথ্য", thB4: "উদ্দেশ্য", thB5: "লোকেশন", thB6: "বিস্তারিত",
+        th1: "স্ট্যাটাস", th2: "নাম (আইডি)", th3: "ইন টাইম", th4: "ইন ছবি", th5: "আউট টাইম", th6: "আউট ছবি", th7: "মোট সময়", th8: "ইন লোকেশন", th9: "আউট লোকেশন", th10: "অ্যাকশন",
+        formNote: "নোট: ফর্ম জমা দেওয়ার পরে, আপনাকে অবশ্যই আমাদের সাপোর্ট টিমকে somenathbose869@gmail.com এ ইমেইল করতে হবে"
+    },
+    hi: { 
+        navHome: "होम", navAbout: "हमारे बारे में", navStaff: "स्टाफ लॉगिन", btnSubmitBooking: "बुकिंग सबमिट करें",
+        heroHeadline: "आपकी मानसिक शांति के लिए एलीट पेशेवर सुरक्षा।", heroSub: "हम कॉर्पोरेट, आवासीय और इवेंट सुरक्षा के लिए उच्च प्रशिक्षित पेशेवर कर्मचारी प्रदान करते हैं।",
+        feat1: "✓ सत्यापित गार्ड", feat2: "✓ जीपीएस लाइव ट्रैकिंग", feat3: "✓ 24/7 कमांड सेंटर सपोर्ट",
+        formTitle: "सेवा बुक करें", formSub: "बुकिंग का अनुरोध करने के लिए नीचे दिए गए विवरण भरें।", optSelect: "सुरक्षा उद्देश्य चुनें", opt1: "इवेंट / पार्टी सुरक्षा", opt2: "कॉर्पोरेट / ऑफिस सुरक्षा", opt3: "निजी अंगरक्षक (बाउंसर)", opt4: "आवासीय परिसर सुरक्षा",
+        aboutTitle: "हमारे बारे में", aboutSub: "हम एक आधुनिक, प्रौद्योगिकी-संचालित सुरक्षा एजेंसी हैं जो पारदर्शी और अत्यधिक पेशेवर सुरक्षा सेवाएं प्रदान करने के लिए समर्पित हैं।", ab1Title: "हमारा लक्ष्य", ab1Desc: "अत्याधुनिक जीपीएस ट्रैकिंग तकनीकों के साथ उच्च प्रशिक्षित पेशेवर कर्मचारियों के संयोजन द्वारा अद्वितीय सुरक्षा सेवाएं प्रदान करना।", ab2Title: "हमें क्यों चुनें?", ab2Desc: "• फोटो सत्यापन: कैमरा कैप्चर द्वारा उपस्थिति सत्यापित।<br>• लाइव ट्रैकिंग: हम वास्तविक समय में गार्ड की निगरानी करते हैं।<br>• प्रशिक्षित पेशेवर: हम सुसंस्कृत, पेशेवर गार्ड प्रदान करते हैं।",
+        sysLogin: "सिस्टम पोर्टल", sysDesc: "केवल अधिकृत परिचालन कर्मचारी। फोटो सत्यापन अनिवार्य है।", btnBackHome: "← होम पर वापस जाएं", gLoginTitle: "गार्ड टर्मिनल", btnAccess: "लॉगिन करें", aLoginTitle: "एडमिन डैशबोर्ड", btnLogin: "एडमिन लॉगिन",
+        dashTitle: "ग्लोबल डैशबोर्ड", btnDisconnect: "लॉगआउट", bookTitle: "📥 ग्राहक बुकिंग", attTitle: "दैनिक उपस्थिति लाइब्रेरी", btnExport: "📥 एक्सेल", regTitle: "गार्ड कार्मिक रोस्टर", btnSaveGuard: "सेव करें", adminMgtTitle: "सह-व्यवस्थापक प्रबंधन", btnAddNewAdmin: "एडमिन जोड़ें",
+        btnIn: "ड्यूटी शुरू करें (चेक इन)", btnOut: "ड्यूटी समाप्त करें (चेक आउट)", btnLogoutSession: "लॉगआउट करें",
+        faceTitleIn: "चेक-इन स्कैन", faceTitleOut: "चेक-आउट स्कैन", faceSubtitle: "कृपया सीधे कैमरे में देखें।", btnCapture: "📸 फोटो लें", btnScanFace: "✅ सेव करें", btnRetake: "🔄 फिर से लें", btnCancelFace: "रद्द करें",
+        thB1: "तारीख", thB2: "ग्राहक का नाम", thB3: "संपर्क जानकारी", thB4: "उद्देश्य", thB5: "स्थान", thB6: "विवरण",
+        th1: "स्थिति", th2: "नाम (आईडी)", th3: "इन समय", th4: "इन फोटो", th5: "आउट समय", th6: "आउट फोटो", th7: "कुल समय", th8: "इन लोकेशन", th9: "आउट लोकेशन", th10: "एक्शन",
+        formNote: "नोट: यह फॉर्म जमा करने के बाद, आपको हमारी सहायता टीम को somenathbose869@gmail.com पर ईमेल करना होगा"
+    }
+};
+
+window.currentLang = localStorage.getItem("sg_lang") || "en";
+window.setLanguage = (lang) => {
+    window.currentLang = lang; localStorage.setItem("sg_lang", lang);
+    document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active')); document.getElementById('btn-' + lang).classList.add('active');
+    
+    const t = i18n[lang];
+    const setTxt = (id, txt) => { if(document.getElementById(id)) document.getElementById(id).innerHTML = txt; };
+    const setPlc = (id, txt) => { if(document.getElementById(id)) document.getElementById(id).placeholder = txt; };
+
+    setTxt('t_navHome', t.navHome); setTxt('t_navAbout', t.navAbout); setTxt('t_navStaff', t.navStaff); 
+    setTxt('t_heroHeadline', t.heroHeadline); setTxt('t_heroSub', t.heroSub);
+    setTxt('t_feat1', t.feat1); setTxt('t_feat2', t.feat2); setTxt('t_feat3', t.feat3);
+    setTxt('t_formTitle', t.formTitle); setTxt('t_formSub', t.formSub); setTxt('t_optSelect', t.optSelect);
+    setTxt('t_opt1', t.opt1); setTxt('t_opt2', t.opt2); setTxt('t_opt3', t.opt3); setTxt('t_opt4', t.opt4);
+    setTxt('btnSubmitBooking', t.btnSubmitBooking); 
+    setTxt('t_aboutTitle', t.aboutTitle); setTxt('t_aboutSub', t.aboutSub); setTxt('t_ab1Title', t.ab1Title); setTxt('t_ab1Desc', t.ab1Desc); setTxt('t_ab2Title', t.ab2Title); setTxt('t_ab2Desc', t.ab2Desc);
+    setTxt('t_sysLogin', t.sysLogin); setTxt('t_sysDesc', t.sysDesc); setTxt('t_btnBackHome', t.btnBackHome); setTxt('t_gLoginTitle', t.gLoginTitle);
+    setTxt('t_btnAccess', t.btnAccess); setTxt('t_aLoginTitle', t.aLoginTitle); setTxt('t_btnLogin', t.btnLogin);
+    setTxt('t_dashTitle', t.dashTitle); setTxt('t_btnDisconnect', t.btnDisconnect); setTxt('t_bookTitle', t.bookTitle);
+    setTxt('t_attTitle', t.attTitle); setTxt('t_btnExport', t.btnExport); setTxt('t_regTitle', t.regTitle); setTxt('btnSaveGuard', t.btnSaveGuard); 
+    setTxt('t_adminMgtTitle', t.adminMgtTitle); setTxt('t_btnAddNewAdmin', t.btnAddNewAdmin);
+    setTxt('btnIn', t.btnIn); setTxt('btnOut', t.btnOut); setTxt('t_btnLogoutSession', t.btnLogoutSession); 
+    setTxt('t_faceTitle', t.faceTitleIn); setTxt('t_faceSubtitle', t.faceSubtitle); 
+    setTxt('btnCapture', t.btnCapture); setTxt('btnScanFace', t.btnScanFace); setTxt('btnRetake', t.btnRetake); 
+    setTxt('t_btnCancelFace1', t.btnCancelFace); setTxt('t_btnCancelFace2', t.btnCancelFace);
+    setTxt('t_formNote', t.formNote);
+
+    setPlc('bookName', lang === 'bn' ? "আপনার পুরো নাম" : (lang === 'hi' ? "आपका पूरा नाम" : "Your Full Name"));
+    setPlc('bookPhone', lang === 'bn' ? "মোবাইল নাম্বার" : (lang === 'hi' ? "मोबाइल नंबर" : "Mobile Number"));
+    setPlc('bookEmail', lang === 'bn' ? "ইমেইল অ্যাড্রেস" : (lang === 'hi' ? "ईमेल पता" : "Email Address (For Confirmation)"));
+    setPlc('bookLocation', lang === 'bn' ? "সার্ভিসের সম্পূর্ণ ঠিকানা" : (lang === 'hi' ? "सेवा का पूरा पता" : "Full Service Location / Address"));
+    setPlc('bookReq', lang === 'bn' ? "বিশেষ রিকোয়ারমেন্ট..." : (lang === 'hi' ? "विशेष आवश्यकताएं..." : "Specific Requirements..."));
+    setPlc('gid', lang === 'bn' ? "আইডি নম্বর দিন" : (lang === 'hi' ? "आईडी नंबर दर्ज करें" : "Enter Guard ID Number"));
+    setPlc('auser', lang === 'bn' ? "অ্যাডমিন ইমেইল" : (lang === 'hi' ? "एडमिन ईमेल" : "Admin Email"));
+    setPlc('apass', lang === 'bn' ? "পাসওয়ার্ড" : (lang === 'hi' ? "पासवर्ड" : "Password"));
+
+    for(let i=1; i<=6; i++) setTxt('thB'+i, t['thB'+i]);
+    for(let i=1; i<=10; i++) setTxt('th'+i, t['th'+i]);
+};
+
+window.onload = () => { window.setLanguage(window.currentLang); };
+
+/* --- DIRECT BOOKING SUBMIT & EMAIL NOTIFICATION LOGIC --- */
+window.submitBookingForm = async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById("btnSubmitBooking"); const ogText = btn.innerText; btn.innerText = "SUBMITTING..."; btn.disabled = true;
+
+    const bookingData = {
+        name: document.getElementById("bookName").value, phone: document.getElementById("bookPhone").value,
+        email: document.getElementById("bookEmail").value, purpose: document.getElementById("bookPurpose").value,
+        location: document.getElementById("bookLocation").value, req: document.getElementById("bookReq").value,
+        date: new Date().toLocaleDateString()
+    };
+
+    const myCompanyEmail = "somenathbose869@gmail.com";
+
+    try {
+        await addDoc(collection(db, "bookings"), { ...bookingData, timestamp: serverTimestamp() });
+        
+        try {
+            await emailjs.send("service_7fj3dtm", "template_ez0nzuk", {
+                to_email: bookingData.email, client_name: bookingData.name, client_phone: bookingData.phone,
+                service_purpose: bookingData.purpose, service_location: bookingData.location, special_req: bookingData.req,
+                company_email: myCompanyEmail
+            });
+        } catch (emailErr) { console.error("EmailJS Notification failed to send", emailErr); }
+
+        let successMsg = "✅ Booking Request Successfully Submitted!\n\nNote: You must also email our support team at: " + myCompanyEmail;
+        if(window.currentLang === 'bn') successMsg = "✅ বুকিং রিকোয়েস্ট সফলভাবে জমা হয়েছে।\n\nনোট: আপনাকে অবশ্যই আমাদের সাপোর্ট টিমকে ইমেইল করতে হবে: " + myCompanyEmail;
+        if(window.currentLang === 'hi') successMsg = "✅ बुकिंग अनुरोध सफलतापूर्वक सबमिट किया गया।\n\nनोट: आपको हमारी सहायता टीम को ईमेल भी करना होगा: " + myCompanyEmail;
+        
+        alert(successMsg);
+        document.getElementById("mainBookingForm").reset();
+
+    } catch (err) { alert("Error saving booking: " + err.message); }
+    btn.innerText = ogText; btn.disabled = false;
+};
+
+/* --- ADMIN PANEL: LOAD AND DELETE BOOKINGS --- */
+function loadBookings() {
+    onSnapshot(query(collection(db, "bookings"), orderBy("timestamp", "desc")), s => {
+        const b = document.getElementById("bookingsBody"); b.innerHTML = "";
+        s.forEach(d => {
+            const r = d.data();
+            b.innerHTML += `<tr>
+                <td><span class="badge" style="background:#f1f5f9; color:#475569;">${r.date}</span></td>
+                <td><b style="font-size: 15px;">${r.name}</b></td>
+                <td>
+                    <div class="contact-highlight contact-phone">📞 ${r.phone}</div><br>
+                    <div class="contact-highlight contact-email">✉️ ${r.email}</div>
+                </td>
+                <td><span class="badge" style="background:var(--accent); color:white;">${r.purpose}</span></td>
+                <td>${r.location}</td>
+                <td style="font-size:11px;">${r.req || "--"}</td>
+                <td><button type="button" onclick="window.deleteBooking('${d.id}')" class="action-btn btn-danger" style="padding:6px 10px; font-size:11px; width:auto;">DEL</button></td>
+            </tr>`;
+        });
+    });
+}
+
+window.deleteBooking = async (id) => {
+    if(confirm("Are you sure you want to delete this client request?")) {
+        await deleteDoc(doc(db, "bookings", id));
+    }
+};
+
+/* --- STAFF AUTH (Admin & Guard) --- */
+window.adminLogin = async (e) => {
+    e.preventDefault(); 
+    const btn = document.getElementById("t_btnLogin"); const ogText = btn.innerText; btn.innerText = "AUTHENTICATING..."; btn.disabled = true;
+    try { 
+        const email = document.getElementById("auser").value.trim();
+        await signInWithEmailAndPassword(auth, email, document.getElementById("apass").value); 
+        const snap = await getDoc(doc(db, "admins", email.toLowerCase()));
+        window.adminRole = snap.exists() ? snap.data().role : "Main Admin";
+        window.showPage("adminPanel"); 
+        if(document.getElementById("adminIdentity")) document.getElementById("adminIdentity").innerText = `Authorized: ${email} (${window.adminRole})`;
+        loadAdmins(); loadGuards(); loadBookings(); 
+    } catch(err) { alert("Auth Failure: Check Email & Password."); }
+    btn.innerText = ogText; btn.disabled = false;
+};
+
+window.guardLogin = async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById("t_btnAccess"); const ogText = btn.innerText; btn.innerText = "VERIFYING..."; btn.disabled = true;
+    try {
+        const id = document.getElementById("gid").value.toUpperCase(); const snap = await getDoc(doc(db, "guards", id));
+        if(snap.exists()) {
+            window.activeGuard = snap.data(); window.activeGuard.id = id;
+            document.getElementById("gname").innerText = window.activeGuard.name;
+            document.getElementById("gzone").innerText = "Zone: " + (window.activeGuard.zone || "All");
+            
+            const shiftSnap = await getDocs(query(collection(db, "attendance"), where("guardId", "==", id), where("outTime", "==", "")));
+            
+            if(!shiftSnap.empty) {
+                const shiftData = shiftSnap.docs[0]; window.activeShiftId = shiftData.id; 
+                if (shiftData.data().photo) {
+                    document.getElementById("guardSelfie").src = shiftData.data().photo; 
+                    document.getElementById("guardSelfie").style.display = "block";
+                }
+                document.getElementById("btnIn").classList.add("hidden"); document.getElementById("btnOut").classList.remove("hidden"); startGPS(); 
+            } else { 
+                document.getElementById("btnIn").classList.remove("hidden"); document.getElementById("btnOut").classList.add("hidden"); document.getElementById("guardSelfie").style.display = "none";
+            }
+            window.showPage("guardPanel"); document.getElementById("gid").value = "";
+        } else { alert("Invalid Guard ID"); }
+    } catch(err) { alert("System Error: " + err.message); }
+    btn.innerText = ogText; btn.disabled = false;
+};
+
+/* --- ADMIN MANAGEMENT FUNCTIONS --- */
+window.addNewAdmin = async () => {
+    const e = document.getElementById("newAdminEmail").value.toLowerCase(); const p = document.getElementById("newAdminPass").value;
+    if(!e || !p) return alert("Email and Password required");
+    try { await createUserWithEmailAndPassword(secondaryAuth, e, p); await signOut(secondaryAuth); await setDoc(doc(db, "admins", e), { email: e, role: "Co-Admin" }); alert("Co-Admin Added Successfully."); document.getElementById("newAdminEmail").value=""; document.getElementById("newAdminPass").value=""; } catch(err) { alert(err.message); }
+};
+function loadAdmins() {
+    onSnapshot(collection(db, "admins"), s => {
+        const b = document.getElementById("adminListBody"); b.innerHTML = "";
+        s.forEach(d => { const isMain = d.data().role === "Main Admin"; const delBtn = !isMain ? `<button type="button" onclick="window.delAdmin('${d.id}')" class="action-btn btn-danger" style="padding:4px 8px; font-size:11px; width:auto;">DEL</button>` : ""; b.innerHTML += `<tr><td style="font-size:12px; font-weight:bold;">${d.data().email}</td><td style="text-align:right">${delBtn}</td></tr>`; });
+    });
+}
+window.delAdmin = async (id) => { if(confirm("Terminate this admin?")) await deleteDoc(doc(db, "admins", id)); };
+
+window.saveGuard = async () => { const id = document.getElementById("nid").value.toUpperCase(); const n = document.getElementById("nname").value; const z = document.getElementById("nzone").value; if(!id || !n) return alert("ID and Name are required."); await setDoc(doc(db, "guards", id), { name: n, zone: z }); window.cancelEdit(); };
+window.loadEdit = (id, n, z) => { window.editModeId = id; document.getElementById("nid").value = id; document.getElementById("nid").disabled = true; document.getElementById("nname").value = n; document.getElementById("nzone").value = (z !== 'undefined' ? z : ''); document.getElementById("btnSaveGuard").innerText = "UPDATE"; document.getElementById("btnCancelEdit").classList.remove("hidden"); };
+window.cancelEdit = () => { window.editModeId = null; document.getElementById("nid").value = ""; document.getElementById("nid").disabled = false; document.getElementById("nname").value = ""; document.getElementById("nzone").value = ""; document.getElementById("btnSaveGuard").innerText = "SAVE"; document.getElementById("btnCancelEdit").classList.add("hidden"); };
+window.deleteGuard = async (id) => { if(confirm("Delete this guard?")) await deleteDoc(doc(db, 'guards', id)); };
+function loadGuards() { onSnapshot(collection(db, "guards"), s => { window.allGuards = []; const b = document.getElementById("guardListBody"); b.innerHTML = ""; s.forEach(d => { let g=d.data(); g.id=d.id; window.allGuards.push(g); let zSafe = g.zone ? g.zone.replace(/'/g, "\\'") : ''; b.innerHTML += `<tr><td><b>${g.id}</b></td><td>${g.name}</td><td>${g.zone||"--"}</td><td><button type="button" onclick="window.loadEdit('${g.id}','${g.name}','${zSafe}')" class="action-btn btn-warning" style="padding:4px 8px;font-size:11px;width:auto;">EDIT</button> <button type="button" onclick="window.deleteGuard('${g.id}')" class="action-btn btn-danger" style="padding:4px 8px;font-size:11px;width:auto;">DEL</button></td></tr>`; }); window.generateDailyReport(); }); }
+
+/* --- MANUAL CAMERA SNAPSHOT LOGIC --- */
+window.initCameraAction = async (act) => {
+    window.cameraActionType = act; 
+    document.getElementById("t_faceTitle").innerText = act === "checkin" ? i18n[window.currentLang].faceTitleIn : i18n[window.currentLang].faceTitleOut;
+    
+    window.retakePhoto();
+    document.getElementById("faceAuthModal").classList.remove("hidden");
+    
+    try { 
+        window.cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } }, audio: false }); 
+        const video = document.getElementById("cameraFeed"); video.srcObject = window.cameraStream; 
+        video.onloadedmetadata = () => { video.play(); };
+    } catch (err) { alert("Camera permission required."); window.closeFaceAuth(); }
+};
+
+window.takeSnapshot = () => {
+    const video = document.getElementById("cameraFeed");
+    if (video.readyState < 2) return alert("Camera not ready.");
+    
+    const canvas = document.getElementById("photoCanvas");
+    canvas.width = 300; canvas.height = 300; 
+    const minDim = Math.min(video.videoWidth || 480, video.videoHeight || 480); 
+    const sx = ((video.videoWidth || 480) - minDim)/2; const sy = ((video.videoHeight || 480) - minDim)/2; 
+    canvas.getContext("2d").drawImage(video, sx, sy, minDim, minDim, 0, 0, 300, 300);
+    
+    window.capturedFaceBase64 = canvas.toDataURL("image/jpeg", 0.5);
+    
+    document.getElementById("cameraFeed").style.display = "none";
+    document.getElementById("scanLine").style.display = "none";
+    
+    const snapImg = document.getElementById("capturedSnapshot");
+    snapImg.src = window.capturedFaceBase64;
+    snapImg.style.display = "block";
+    
+    document.getElementById("cameraControls").classList.add("hidden");
+    document.getElementById("verifyControls").classList.remove("hidden");
+};
+
+window.retakePhoto = () => {
+    document.getElementById("cameraFeed").style.display = "block";
+    document.getElementById("scanLine").style.display = "block";
+    document.getElementById("capturedSnapshot").style.display = "none";
+    
+    document.getElementById("cameraControls").classList.remove("hidden");
+    document.getElementById("verifyControls").classList.add("hidden");
+};
+
+window.closeFaceAuth = () => { 
+    document.getElementById("faceAuthModal").classList.add("hidden"); 
+    if(window.cameraStream) window.cameraStream.getTracks().forEach(t => t.stop()); 
+};
+
+window.processPhoto = async () => {
+    const btn = document.getElementById("btnScanFace"); const og = btn.innerText; 
+    btn.innerText = "SAVING..."; btn.disabled = true;
+    
+    try {
+        if (window.cameraActionType === "checkin") {
+            window.closeFaceAuth(); executeCheckIn(); 
+        } else {
+            window.closeFaceAuth(); executeCheckOut();
+        }
+    } catch(e) { window.closeFaceAuth(); window.cameraActionType === "checkin" ? executeCheckIn() : executeCheckOut(); }
+};
+
+/* --- DB & DUAL GPS LOCATION FIX WITH NON-BLOCKING PHOTO FALLBACK --- */
+async function executeCheckIn() {
+    document.getElementById("liveLoc").innerText = "📍 Securing Location & Saving Record...";
+
+    const performSave = async (lat, lon) => {
+        let docData = { 
+            guardId: window.activeGuard.id, 
+            name: window.activeGuard.name, 
+            date: new Date().toLocaleDateString(), 
+            isoDate: new Date().toISOString().split('T')[0], 
+            inTime: new Date().toLocaleTimeString(), 
+            startTime: Date.now(), 
+            outTime: "", 
+            totalTime: "", 
+            checkInLat: lat, 
+            checkInLon: lon, 
+            photo: window.capturedFaceBase64, 
+            timestamp: serverTimestamp() 
+        };
+        let ref;
+        try {
+            ref = await addDoc(collection(db, "attendance"), docData);
+        } catch(err) {
+            console.log("Photo rejected or network error, saving without photo");
+            docData.photo = ""; // Drop the photo to bypass block
+            ref = await addDoc(collection(db, "attendance"), docData);
+        }
+        
+        window.activeShiftId = ref.id; 
+        if(docData.photo) {
+            document.getElementById("guardSelfie").src = docData.photo; 
+            document.getElementById("guardSelfie").style.display = "block"; 
+        }
+        document.getElementById("btnIn").classList.add("hidden"); 
+        document.getElementById("btnOut").classList.remove("hidden"); 
+        localStorage.setItem("persistentTrackId", window.activeGuard.id); 
+        startGPS();
+    };
+
+    navigator.geolocation.getCurrentPosition(
+        async p => { try { await performSave(p.coords.latitude, p.coords.longitude); } catch(err) { alert("Check-in Error: " + err.message); document.getElementById("liveLoc").innerText = "❌ Save Failed."; } }, 
+        async err => { try { await performSave(null, null); } catch(err) { alert("Check-in Error: " + err.message); document.getElementById("liveLoc").innerText = "❌ Save Failed."; } }, 
+        {enableHighAccuracy: true, timeout: 10000}
+    );
+}
+
+async function executeCheckOut() {
+    if(!window.activeShiftId) return alert("Shift ID not found!");
+    document.getElementById("liveLoc").innerText = "📍 Securing Checkout & Saving Record...";
+
+    const saveOutData = async (lat, lon) => {
+        try {
+            const sDoc = await getDoc(doc(db, "attendance", window.activeShiftId));
+            const diff = Date.now() - sDoc.data().startTime;
+            const hrs = Math.floor(diff/3600000);
+            const mins = Math.floor((diff%3600000)/60000);
+
+            let outData = {
+                outTime: new Date().toLocaleTimeString(),
+                totalTime: `${hrs}h ${mins}m`,
+                checkoutPhoto: window.capturedFaceBase64,
+                lastLat: lat,
+                lastLon: lon
+            };
+
+            try {
+                await updateDoc(doc(db, "attendance", window.activeShiftId), outData);
+            } catch(e) {
+                console.log("Photo rejected or network error, checking out without photo");
+                outData.checkoutPhoto = ""; // Drop the photo to bypass block
+                await updateDoc(doc(db, "attendance", window.activeShiftId), outData);
+            }
+
+            await deleteDoc(doc(db, "tracking", window.activeGuard.id));
+            localStorage.removeItem("persistentTrackId"); localStorage.removeItem("lastLat"); localStorage.removeItem("lastLon");
+            alert("✅ Checkout Successful!");
+            location.reload();
+        } catch(e) {
+            alert("Checkout Error: " + e.message);
+            document.getElementById("liveLoc").innerText = "❌ Save Failed. Try Again.";
+        }
+    };
+
+    navigator.geolocation.getCurrentPosition(
+        p => saveOutData(p.coords.latitude, p.coords.longitude),
+        err => saveOutData(parseFloat(localStorage.getItem("lastLat")) || null, parseFloat(localStorage.getItem("lastLon")) || null),
+        {enableHighAccuracy: true, timeout: 5000}
+    );
+}
+
+function startGPS() { const id = localStorage.getItem("persistentTrackId"); if(!id) return; window.watchId = navigator.geolocation.watchPosition(p => { localStorage.setItem("lastLat", p.coords.latitude); localStorage.setItem("lastLon", p.coords.longitude); setDoc(doc(db, "tracking", id), { lat: p.coords.latitude, lon: p.coords.longitude, timestamp: serverTimestamp() }); if(document.getElementById("liveLoc")) document.getElementById("liveLoc").innerText = `📡 LIVE: ${p.coords.latitude.toFixed(4)}, ${p.coords.longitude.toFixed(4)}`; }, err => {}, {enableHighAccuracy: true}); }
+
+/* --- ADMIN UTILS, EXCEL & CLEAR OLD DATA --- */
+window.logout = () => signOut(auth).then(() => location.reload());
+window.togglePassword = (id, btn) => { const el = document.getElementById(id); if(el.type==="password"){ el.type="text"; btn.innerText="🙈";} else {el.type="password"; btn.innerText="👁️";} };
+window.viewPhoto = (src) => { document.getElementById("fullSizeImage").src = src; document.getElementById("photoViewerModal").classList.remove("hidden"); };
+window.closePhotoViewer = () => { document.getElementById("photoViewerModal").classList.add("hidden"); };
+window.openMap = (lat, lon) => { window.open(`https://www.google.com/maps/search/?api=1&query=${lat},${lon}`, '_blank'); };
+window.trackLive = (id) => { onSnapshot(doc(db, "tracking", id), d => { if(d.exists()) window.openMap(d.data().lat, d.data().lon); else alert("Lost GPS"); }); };
+
+window.deleteAttendance = async (id) => {
+    if(confirm("Are you sure you want to delete this attendance record?")) {
+        try {
+            await deleteDoc(doc(db, 'attendance', id));
+            window.generateDailyReport(); // Refresh the table
+        } catch(err) {
+            alert("Error deleting record: " + err.message);
+        }
+    }
+};
+
+window.generateDailyReport = async () => {
+    const td = document.getElementById('filterDate').value; if(!td) return;
+    const attSnap = await getDocs(query(collection(db, "attendance"), where("isoDate", "==", td)));
+    let map = {}; attSnap.forEach(d => { let data = d.data(); data.id = d.id; map[data.guardId] = data; });
+    const tb = document.getElementById("attendanceBody"); tb.innerHTML = "";
+    window.dailyReportData = []; 
+    
+    window.allGuards.forEach(g => {
+        const r = map[g.id];
+        if(r) {
+            let isLive = !r.outTime;
+            let inP = r.photo ? `<img src="${r.photo}" onclick="window.viewPhoto('${r.photo}')" class="photo-thumbnail">` : "No Photo";
+            let outP = r.checkoutPhoto ? `<img src="${r.checkoutPhoto}" onclick="window.viewPhoto('${r.checkoutPhoto}')" class="photo-thumbnail">` : (isLive ? "--" : "No Photo");
+            
+            let inLocBtn = r.checkInLat ? `<button type="button" onclick="window.openMap(${r.checkInLat},${r.checkInLon})" class="action-btn btn-dark" style="padding:4px;font-size:10px;width:auto;">📍 MAP</button>` : "--";
+            let outLocBtn = isLive ? `<button type="button" onclick="window.trackLive('${g.id}')" class="action-btn btn-primary" style="padding:4px;font-size:10px;width:auto;">🌍 LIVE</button>` : (r.lastLat ? `<button type="button" onclick="window.openMap(${r.lastLat},${r.lastLon})" class="action-btn btn-warning" style="padding:4px;font-size:10px;width:auto;color:black;">🏁 MAP</button>` : "--");
+
+            // FIXED DEL BUTTON HERE
+            tb.innerHTML += `<tr><td><span class="badge badge-present">PRESENT</span></td><td><b>${g.name}</b><br><span style="font-size:11px; color:#64748b;">${g.id}</span></td><td>${r.inTime}</td><td style="text-align:center;">${inP}</td><td>${r.outTime||'--'}</td><td style="text-align:center;">${outP}</td><td><b>${r.totalTime||'On Duty'}</b></td><td>${inLocBtn}</td><td>${outLocBtn}</td><td><button type="button" onclick="window.deleteAttendance('${r.id}')" class="action-btn btn-danger" style="padding:4px;font-size:10px;width:auto;">DEL</button></td></tr>`;
+            
+            window.dailyReportData.push({ Status: "PRESENT", ID: g.id, Name: g.name, CheckIn: r.inTime, CheckOut: r.outTime||"Live", TotalTime: r.totalTime||"Live" });
+        } else {
+            tb.innerHTML += `<tr><td><span class="badge badge-absent">ABSENT</span></td><td><b>${g.name}</b><br><span style="font-size:11px; color:#64748b;">${g.id}</span></td><td colspan="8">--</td></tr>`;
+            window.dailyReportData.push({ Status: "ABSENT", ID: g.id, Name: g.name, CheckIn: "--", CheckOut: "--", TotalTime: "--" });
+        }
+    });
+};
+
+window.downloadDailyReport = () => { 
+    if(!window.dailyReportData || window.dailyReportData.length===0) return alert("No data to download."); 
+    const dateStr = document.getElementById('filterDate').value; 
+    let csv = `Daily Security Report - ${dateStr}\n\nStatus,Guard ID,Guard Name,Check In,Check Out,Total Time\n`; 
+    window.dailyReportData.forEach(r => { csv += `${r.Status},${r.ID},"${r.Name}",${r.CheckIn},${r.CheckOut},${r.TotalTime}\n`; }); 
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); 
+    const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `SecureGuard_Report_${dateStr}.csv`; link.click(); 
+};
+
+window.clearOldAttendance = async () => {
+    if(!confirm("Are you sure you want to delete ALL attendance data older than 7 days? This action cannot be undone.")) return;
+    try {
+        const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+        const attSnap = await getDocs(query(collection(db, "attendance"), where("startTime", "<", sevenDaysAgo)));
+        let count = 0;
+        attSnap.forEach(d => { deleteDoc(d.ref); count++; });
+        alert(`Successfully deleted ${count} old attendance records.`);
+        window.generateDailyReport();
+    } catch(err) {
+        alert("Error clearing old data: " + err.message);
+    }
+};
+
+document.getElementById('filterDate').value = new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureGuard Pro - Professional Security</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
     
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
@@ -94,8 +909,6 @@
 
         .photo-thumbnail { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; border: 2px solid #cbd5e1; cursor: pointer; transition: transform 0.2s ease; }
         .photo-thumbnail:hover { transform: scale(1.5); box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 10; position: relative;}
-        
-        .otp-input { letter-spacing: 12px; font-size: 26px; text-align: center; font-weight: 800; color: var(--primary); background: #f1f5f9; padding: 20px;}
 
         @media (max-width: 850px) { 
             .navbar { flex-direction: column; border-radius: 20px; padding: 15px;} 
@@ -131,10 +944,10 @@
         <div class="hero-text glass-card" style="padding: 40px; border:none; background: transparent; box-shadow: none;">
             <h1 id="t_heroHeadline">Elite Professional Security for Your Peace of Mind.</h1>
             <p id="t_heroSub" style="font-size: 18px; margin-bottom: 30px;">
-                We provide highly trained, AI-verified professional personnel for corporate, residential, and event security. Request a certified guard today!
+                We provide highly trained professional personnel for corporate, residential, and event security. Request a certified guard today!
             </p>
             <div style="display: flex; gap: 15px; flex-direction: column;">
-                <p style="font-weight: 700; color: var(--success); margin: 0; font-size: 16px;" id="t_feat1">✓ 100% AI-Verified Guard Deployment</p>
+                <p style="font-weight: 700; color: var(--success); margin: 0; font-size: 16px;" id="t_feat1">✓ Verified Guard Deployment</p>
                 <p style="font-weight: 700; color: var(--success); margin: 0; font-size: 16px;" id="t_feat2">✓ GPS Live Tracking enabled</p>
                 <p style="font-weight: 700; color: var(--success); margin: 0; font-size: 16px;" id="t_feat3">✓ 24/7 Command Center Support</p>
             </div>
@@ -161,6 +974,10 @@
                 <textarea id="bookReq" rows="3" placeholder="Specific Requirements (e.g. Need 2 professional guards for 3 days...)"></textarea>
                 
                 <button type="submit" class="form-btn btn-primary" id="btnSubmitBooking" style="margin-top: 15px;">SUBMIT BOOKING REQUEST</button>
+                
+                <p style="font-size: 13px; color: var(--danger); font-weight: 700; margin-top: 15px; text-align: center; border: 1px dashed var(--danger); padding: 10px; border-radius: 8px;" id="t_formNote">
+                    Note: After submitting this form, you must email our support team at somenathbose869@gmail.com
+                </p>
             </form>
         </div>
     </div>
@@ -173,11 +990,11 @@
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 30px;">
             <div style="padding: 30px; background: rgba(255,255,255,0.6); border-radius: 16px; border: 1px solid rgba(255,255,255,0.8);">
                 <h2 id="t_ab1Title" style="color: var(--accent);">Our Mission</h2>
-                <p id="t_ab1Desc">To deliver unparalleled security services by combining highly trained professional personnel with cutting-edge AI and GPS tracking technologies.</p>
+                <p id="t_ab1Desc">To deliver unparalleled security services by combining highly trained professional personnel with GPS tracking technologies.</p>
             </div>
             <div style="padding: 30px; background: rgba(255,255,255,0.6); border-radius: 16px; border: 1px solid rgba(255,255,255,0.8);">
                 <h2 id="t_ab2Title" style="color: var(--success);">Why Choose Us?</h2>
-                <p id="t_ab2Desc" style="text-align: left;">• No Proxies: Every guard's attendance is verified by AI Facial Recognition.<br>• Live Tracking: We track guard deployments in real-time.<br>• Trained Professionals: We provide well-mannered, unarmed professional guards.</p>
+                <p id="t_ab2Desc" style="text-align: left;">• Photo Verification: Every guard's attendance is verified by Camera Capture.<br>• Live Tracking: We track guard deployments in real-time.<br>• Trained Professionals: We provide well-mannered, unarmed professional guards.</p>
             </div>
         </div>
     </div>
@@ -187,8 +1004,7 @@
     <div class="auth-wrapper">
         <div class="auth-info" style="background: linear-gradient(135deg, #0284c7, #0ea5e9);">
             <h2 id="t_sysLogin">System Portal</h2>
-            <p id="t_sysDesc">Authorized operational personnel only. AI Face Matching strictly enforced.</p>
-            <div id="aiStatus" style="padding: 8px 15px; border-radius: 8px; font-size: 12px; font-weight: bold; background: rgba(255,255,255,0.2); margin-top: 20px; color: white; display: inline-block;">⏳ AI Core Loading...</div>
+            <p id="t_sysDesc">Authorized operational personnel only. Photo Verification strictly enforced.</p>
             <br>
             <button type="button" onclick="window.showPage('landingPage')" class="nav-btn" style="background: rgba(0,0,0,0.3); color: white; margin-top: 40px;" id="t_btnBackHome">← Back to Home</button>
         </div>
@@ -226,7 +1042,7 @@
         <h3 style="color: var(--success); margin-bottom: 15px;" id="t_bookTitle">📥 Client Booking Requests</h3>
         <div style="overflow-x:auto;">
             <table>
-                <thead><tr><th id="thB1">DATE</th><th id="thB2">CLIENT NAME</th><th id="thB3">CONTACT INFO</th><th id="thB4">PURPOSE</th><th id="thB5">LOCATION</th><th id="thB6">DETAILS</th></tr></thead>
+                <thead><tr><th id="thB1">DATE</th><th id="thB2">CLIENT NAME</th><th id="thB3">CONTACT INFO</th><th id="thB4">PURPOSE</th><th id="thB5">LOCATION</th><th id="thB6">DETAILS</th><th>ACTION</th></tr></thead>
                 <tbody id="bookingsBody"></tbody>
             </table>
         </div>
@@ -235,7 +1051,10 @@
     <div class="glass-card" style="padding: 30px; margin-bottom: 20px;">
         <div style="display: flex; justify-content: space-between; flex-wrap:wrap; margin-bottom: 15px; gap: 10px;">
             <h3 style="margin: 0; color: var(--accent);" id="t_attTitle">Daily Attendance Library</h3>
-            <button type="button" onclick="window.downloadDailyReport()" class="action-btn btn-success" style="width: auto; padding: 8px 15px; font-size: 13px;" id="t_btnExport">📥 EXCEL</button>
+            <div style="display: flex; gap: 10px;">
+                <button type="button" onclick="window.clearOldAttendance()" class="action-btn btn-danger" style="width: auto; padding: 8px 15px; font-size: 13px; background: transparent; color: var(--danger); border: 2px solid var(--danger);">🗑️ CLEAR > 7 DAYS</button>
+                <button type="button" onclick="window.downloadDailyReport()" class="action-btn btn-success" style="width: auto; padding: 8px 15px; font-size: 13px;" id="t_btnExport">📥 EXCEL</button>
+            </div>
         </div>
         <input type="date" id="filterDate" onchange="window.generateDailyReport()" style="max-width: 250px; border-color: var(--accent);">
         <div style="overflow-x:auto; margin-top: 15px;">
@@ -247,7 +1066,7 @@
                         <th id="th3">IN TIME</th>
                         <th id="th4">IN PHOTO</th>
                         <th id="th5">OUT TIME</th>
-                        <th id="th6">OUT PHOTO (AI)</th>
+                        <th id="th6">OUT PHOTO</th>
                         <th id="th7">TOTAL TIME</th>
                         <th id="th8">IN LOC</th>
                         <th id="th9">OUT LOC</th>
@@ -302,7 +1121,7 @@
 
 <div id="faceAuthModal" class="modal-overlay hidden">
     <div class="glass-card" style="width: 320px; text-align: center; padding: 30px; background: white;">
-        <h3 style="color: var(--primary); margin-bottom: 5px;" id="t_faceTitle">AI Facial Scan</h3>
+        <h3 style="color: var(--primary); margin-bottom: 5px;" id="t_faceTitle">Photo Scan</h3>
         <p style="font-size: 12px; color: var(--text-sub); font-weight: 600;" id="t_faceSubtitle">Please look straight into the camera.</p>
         
         <div class="camera-container" id="cameraContainer">
@@ -317,7 +1136,7 @@
         </div>
 
         <div id="verifyControls" class="hidden">
-            <button type="button" onclick="window.processAIPhoto()" class="action-btn btn-success" style="margin-bottom: 10px; font-size:14px;" id="btnScanFace">✅ VERIFY & PROCEED</button>
+            <button type="button" onclick="window.processPhoto()" class="action-btn btn-success" style="margin-bottom: 10px; font-size:14px;" id="btnScanFace">✅ SAVE & PROCEED</button>
             <button type="button" onclick="window.retakePhoto()" class="action-btn btn-warning" style="margin-bottom: 10px; font-size:14px;" id="btnRetake">🔄 RETAKE</button>
             <button type="button" onclick="window.closeFaceAuth()" class="action-btn btn-danger" style="background: transparent; color: var(--danger); border: 1.5px solid var(--danger);" id="t_btnCancelFace2">CANCEL</button>
         </div>
@@ -348,14 +1167,13 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
 const secondaryApp = initializeApp(firebaseConfig, "Secondary"); const secondaryAuth = getAuth(secondaryApp);
 
-window.allGuards = []; window.dailyReportData = []; window.aiReady = false; window.cameraStream = null; window.savedFaceDescriptorJSON = null; 
+window.allGuards = []; window.dailyReportData = []; window.cameraStream = null; 
 
 // ==========================================
 // EMAILJS CONFIGURATION
 emailjs.init({ publicKey: "kShGa3LnQigG0Bnjm" }); 
 // ==========================================
 
-/* --- UI Navigation Logic --- */
 window.showPage = (pageId) => {
     ['landingPage', 'aboutPage', 'staffAuthPage', 'adminPanel', 'guardPanel'].forEach(id => { document.getElementById(id).classList.add("hidden"); });
     document.getElementById(pageId).classList.remove("hidden");
@@ -369,49 +1187,48 @@ window.showPage = (pageId) => {
     }
 };
 
-/* --- I18N TRILINGUAL DICTIONARY --- */
 const i18n = {
     en: { 
         navHome: "Home", navAbout: "About Us", navStaff: "STAFF LOGIN", btnSubmitBooking: "SUBMIT BOOKING REQUEST",
-        heroHeadline: "Elite Professional Security for Your Peace of Mind.", heroSub: "We provide highly trained, AI-verified professional personnel for corporate, residential, and event security.",
-        feat1: "✓ 100% AI-Verified Guard Deployment", feat2: "✓ GPS Live Tracking enabled", feat3: "✓ 24/7 Command Center Support",
+        heroHeadline: "Elite Professional Security for Your Peace of Mind.", heroSub: "We provide highly trained professional personnel for corporate, residential, and event security.",
+        feat1: "✓ Verified Guard Deployment", feat2: "✓ GPS Live Tracking enabled", feat3: "✓ 24/7 Command Center Support",
         formTitle: "Book a Service", formSub: "Fill out the details below to request a service.", optSelect: "Select Security Purpose", opt1: "Event / Party Security", opt2: "Corporate / Office Security", opt3: "Personal Bodyguard (Bouncer)", opt4: "Residential Complex Security",
-        aboutTitle: "About SecureGuard Pro", aboutSub: "We are a modern, technology-driven security agency dedicated to providing transparent and highly professional security services.", ab1Title: "Our Mission", ab1Desc: "To deliver unparalleled security services by combining highly trained professional personnel with cutting-edge AI and GPS tracking technologies.", ab2Title: "Why Choose Us?", ab2Desc: "• No Proxies: Every guard's attendance is verified by AI Facial Recognition.<br>• Live Tracking: We track guard deployments in real-time.<br>• Trained Professionals: We provide well-mannered, unarmed professional guards.",
-        sysLogin: "System Portal", sysDesc: "Authorized operational personnel only. AI Face Matching strictly enforced.", btnBackHome: "← Back to Home", gLoginTitle: "Guard Terminal", btnAccess: "ACCESS TERMINAL", aLoginTitle: "Admin Dashboard", btnLogin: "AUTHORIZE ADMIN",
+        aboutTitle: "About SecureGuard Pro", aboutSub: "We are a modern, technology-driven security agency dedicated to providing transparent and highly professional security services.", ab1Title: "Our Mission", ab1Desc: "To deliver unparalleled security services by combining highly trained professional personnel with GPS tracking technologies.", ab2Title: "Why Choose Us?", ab2Desc: "• Photo Verification: Every guard's attendance is verified by Camera Capture.<br>• Live Tracking: We track guard deployments in real-time.<br>• Trained Professionals: We provide well-mannered, unarmed professional guards.",
+        sysLogin: "System Portal", sysDesc: "Authorized operational personnel only. Photo Verification strictly enforced.", btnBackHome: "← Back to Home", gLoginTitle: "Guard Terminal", btnAccess: "ACCESS TERMINAL", aLoginTitle: "Admin Dashboard", btnLogin: "AUTHORIZE ADMIN",
         dashTitle: "Global Dashboard", btnDisconnect: "DISCONNECT", bookTitle: "📥 Client Booking Requests", attTitle: "Daily Attendance Library", btnExport: "📥 EXCEL", regTitle: "Guard Personnel Roster", btnSaveGuard: "SAVE", adminMgtTitle: "Co-Admin Management", btnAddNewAdmin: "ADD CO-ADMIN",
         btnIn: "START PATROL (CHECK IN)", btnOut: "END PATROL (CHECK OUT)", btnLogoutSession: "Logout Session",
-        faceTitleIn: "Check-In Scan", faceTitleOut: "Check-Out Scan", faceSubtitle: "Please look straight into the camera.", btnCapture: "📸 CAPTURE PHOTO", btnScanFace: "✅ VERIFY & PROCEED", btnRetake: "🔄 RETAKE", btnCancelFace: "CANCEL",
+        faceTitleIn: "Check-In Scan", faceTitleOut: "Check-Out Scan", faceSubtitle: "Please look straight into the camera.", btnCapture: "📸 CAPTURE PHOTO", btnScanFace: "✅ SAVE & PROCEED", btnRetake: "🔄 RETAKE", btnCancelFace: "CANCEL",
         thB1: "DATE", thB2: "CLIENT NAME", thB3: "CONTACT INFO", thB4: "PURPOSE", thB5: "LOCATION", thB6: "DETAILS",
-        th1: "STATUS", th2: "NAME (ID)", th3: "IN TIME", th4: "IN PHOTO", th5: "OUT TIME", th6: "OUT PHOTO (AI)", th7: "TOTAL TIME", th8: "IN LOC", th9: "OUT LOC", th10: "ACTION",
-        msgAiFail: "No face detected. Please retake the photo.", msgProxy: "Warning: Face mismatch flagged."
+        th1: "STATUS", th2: "NAME (ID)", th3: "IN TIME", th4: "IN PHOTO", th5: "OUT TIME", th6: "OUT PHOTO", th7: "TOTAL TIME", th8: "IN LOC", th9: "OUT LOC", th10: "ACTION",
+        formNote: "Note: After submitting this form, you must email our support team at somenathbose869@gmail.com"
     },
     bn: { 
         navHome: "হোম", navAbout: "আমাদের সম্পর্কে", navStaff: "স্টাফ লগইন", btnSubmitBooking: "বুকিং সাবমিট করুন",
-        heroHeadline: "আপনার মানসিক শান্তির জন্য সেরা পেশাদার নিরাপত্তা।", heroSub: "আমরা কর্পোরেট, আবাসিক এবং ইভেন্ট নিরাপত্তার জন্য উচ্চ প্রশিক্ষিত, এআই-যাচাইকৃত পেশাদার রক্ষী প্রদান করি।",
-        feat1: "✓ ১০০% এআই-ভেরিফাইড গার্ড", feat2: "✓ রিয়েল-টাইম জিপিএস ট্র্যাকিং", feat3: "✓ ২৪/৭ কমান্ড সেন্টার সাপোর্ট",
+        heroHeadline: "আপনার মানসিক শান্তির জন্য সেরা পেশাদার নিরাপত্তা।", heroSub: "আমরা কর্পোরেট, আবাসিক এবং ইভেন্ট নিরাপত্তার জন্য উচ্চ প্রশিক্ষিত পেশাদার রক্ষী প্রদান করি।",
+        feat1: "✓ ভেরিফাইড গার্ড", feat2: "✓ রিয়েল-টাইম জিপিএস ট্র্যাকিং", feat3: "✓ ২৪/৭ কমান্ড সেন্টার সাপোর্ট",
         formTitle: "সার্ভিস বুক করুন", formSub: "বুকিং করতে নিচের তথ্যগুলো পূরণ করুন।", optSelect: "নিরাপত্তার উদ্দেশ্য নির্বাচন করুন", opt1: "ইভেন্ট / পার্টি সিকিউরিটি", opt2: "কর্পোরেট / অফিস সিকিউরিটি", opt3: "বডিগার্ড (বাউন্সার)", opt4: "আবাসিক কমপ্লেক্স সিকিউরিটি",
-        aboutTitle: "আমাদের সম্পর্কে", aboutSub: "আমরা একটি আধুনিক, প্রযুক্তি-চালিত সিকিউরিটি এজেন্সি যা স্বচ্ছ এবং অত্যন্ত পেশাদার নিরাপত্তা প্রদান করতে নিবেদিত।", ab1Title: "আমাদের লক্ষ্য", ab1Desc: "উন্নত এআই এবং জিপিএস প্রযুক্তির সাথে প্রশিক্ষিত পেশাদার কর্মীদের সমন্বয় করে অতুলনীয় নিরাপত্তা সেবা প্রদান করা।", ab2Title: "আমাদের কেন বেছে নেবেন?", ab2Desc: "• নো প্রক্সি: এআই ফেসিয়াল রিকগনিশন দ্বারা গার্ডদের উপস্থিতি যাচাই করা হয়।<br>• লাইভ ট্র্যাকিং: আমরা রিয়েল-টাইমে গার্ডদের নজরদারি করি।<br>• প্রশিক্ষিত পেশাদার: আমরা মার্জিত এবং পেশাদার গার্ড প্রদান করি।",
-        sysLogin: "সিস্টেম পোর্টাল", sysDesc: "শুধুমাত্র অনুমোদিত স্টাফদের জন্য। এআই ফেইস ম্যাচিং বাধ্যতামূলক।", btnBackHome: "← হোম পেজে ফিরে যান", gLoginTitle: "গার্ড টার্মিনাল", btnAccess: "প্রবেশ করুন", aLoginTitle: "অ্যাডমিন ড্যাশবোর্ড", btnLogin: "লগইন করুন",
+        aboutTitle: "আমাদের সম্পর্কে", aboutSub: "আমরা একটি আধুনিক, প্রযুক্তি-চালিত সিকিউরিটি এজেন্সি যা স্বচ্ছ এবং অত্যন্ত পেশাদার নিরাপত্তা প্রদান করতে নিবেদিত।", ab1Title: "আমাদের লক্ষ্য", ab1Desc: "উন্নত জিপিএস প্রযুক্তির সাথে প্রশিক্ষিত পেশাদার কর্মীদের সমন্বয় করে অতুলনীয় নিরাপত্তা সেবা প্রদান করা।", ab2Title: "আমাদের কেন বেছে নেবেন?", ab2Desc: "• ফটো ভেরিফিকেশন: ক্যামেরা ক্যাপচার দ্বারা গার্ডদের উপস্থিতি যাচাই করা হয়।<br>• লাইভ ট্র্যাকিং: আমরা রিয়েল-টাইমে গার্ডদের নজরদারি করি।<br>• প্রশিক্ষিত পেশাদার: আমরা মার্জিত এবং পেশাদার গার্ড প্রদান করি।",
+        sysLogin: "সিস্টেম পোর্টাল", sysDesc: "শুধুমাত্র অনুমোদিত স্টাফদের জন্য। ফটো ভেরিফিকেশন বাধ্যতামূলক।", btnBackHome: "← হোম পেজে ফিরে যান", gLoginTitle: "গার্ড টার্মিনাল", btnAccess: "প্রবেশ করুন", aLoginTitle: "অ্যাডমিন ড্যাশবোর্ড", btnLogin: "লগইন করুন",
         dashTitle: "গ্লোবাল ড্যাশবোর্ড", btnDisconnect: "লগআউট", bookTitle: "📥 ক্লায়েন্ট বুকিং রিকোয়েস্ট", attTitle: "দৈনিক উপস্থিতি লাইব্রেরি", btnExport: "📥 এক্সেল", regTitle: "গার্ড পার্সোনেল রোস্টার", btnSaveGuard: "সেভ করুন", adminMgtTitle: "কো-অ্যাডমিন ম্যানেজমেন্ট", btnAddNewAdmin: "অ্যাডমিন যুক্ত করুন",
         btnIn: "ডিউটি শুরু (চেক ইন)", btnOut: "ডিউটি শেষ (চেক আউট)", btnLogoutSession: "লগআউট করুন",
-        faceTitleIn: "চেক-ইন স্ক্যান", faceTitleOut: "চেক-আউট স্ক্যান", faceSubtitle: "দয়া করে ক্যামেরার দিকে সোজা তাকান।", btnCapture: "📸 ছবি তুলুন", btnScanFace: "✅ ভেরিফাই করুন", btnRetake: "🔄 আবার তুলুন", btnCancelFace: "বাতিল",
+        faceTitleIn: "চেক-ইন স্ক্যান", faceTitleOut: "চেক-আউট স্ক্যান", faceSubtitle: "দয়া করে ক্যামেরার দিকে সোজা তাকান।", btnCapture: "📸 ছবি তুলুন", btnScanFace: "✅ সেভ করুন", btnRetake: "🔄 আবার তুলুন", btnCancelFace: "বাতিল",
         thB1: "তারিখ", thB2: "ক্লায়েন্টের নাম", thB3: "যোগাযোগের তথ্য", thB4: "উদ্দেশ্য", thB5: "লোকেশন", thB6: "বিস্তারিত",
-        th1: "স্ট্যাটাস", th2: "নাম (আইডি)", th3: "ইন টাইম", th4: "ইন ছবি", th5: "আউট টাইম", th6: "আউট ছবি (এআই)", th7: "মোট সময়", th8: "ইন লোকেশন", th9: "আউট লোকেশন", th10: "অ্যাকশন",
-        msgAiFail: "কোনো মুখ শনাক্ত হয়নি। দয়া করে আবার ছবি তুলুন।", msgProxy: "সতর্কতা: চেহারার অমিল ধরা পড়েছে।"
+        th1: "স্ট্যাটাস", th2: "নাম (আইডি)", th3: "ইন টাইম", th4: "ইন ছবি", th5: "আউট টাইম", th6: "আউট ছবি", th7: "মোট সময়", th8: "ইন লোকেশন", th9: "আউট লোকেশন", th10: "অ্যাকশন",
+        formNote: "নোট: ফর্ম জমা দেওয়ার পরে, আপনাকে অবশ্যই আমাদের সাপোর্ট টিমকে somenathbose869@gmail.com এ ইমেইল করতে হবে"
     },
     hi: { 
         navHome: "होम", navAbout: "हमारे बारे में", navStaff: "स्टाफ लॉगिन", btnSubmitBooking: "बुकिंग सबमिट करें",
-        heroHeadline: "आपकी मानसिक शांति के लिए एलीट पेशेवर सुरक्षा।", heroSub: "हम कॉर्पोरेट, आवासीय और इवेंट सुरक्षा के लिए उच्च प्रशिक्षित, एआई-सत्यापित पेशेवर कर्मचारी प्रदान करते हैं।",
-        feat1: "✓ 100% एआई-सत्यापित गार्ड", feat2: "✓ जीपीएस लाइव ट्रैकिंग", feat3: "✓ 24/7 कमांड सेंटर सपोर्ट",
+        heroHeadline: "आपकी मानसिक शांति के लिए एलीट पेशेवर सुरक्षा।", heroSub: "हम कॉर्पोरेट, आवासीय और इवेंट सुरक्षा के लिए उच्च प्रशिक्षित पेशेवर कर्मचारी प्रदान करते हैं।",
+        feat1: "✓ सत्यापित गार्ड", feat2: "✓ जीपीएस लाइव ट्रैकिंग", feat3: "✓ 24/7 कमांड सेंटर सपोर्ट",
         formTitle: "सेवा बुक करें", formSub: "बुकिंग का अनुरोध करने के लिए नीचे दिए गए विवरण भरें।", optSelect: "सुरक्षा उद्देश्य चुनें", opt1: "इवेंट / पार्टी सुरक्षा", opt2: "कॉर्पोरेट / ऑफिस सुरक्षा", opt3: "निजी अंगरक्षक (बाउंसर)", opt4: "आवासीय परिसर सुरक्षा",
-        aboutTitle: "हमारे बारे में", aboutSub: "हम एक आधुनिक, प्रौद्योगिकी-संचालित सुरक्षा एजेंसी हैं जो पारदर्शी और अत्यधिक पेशेवर सुरक्षा सेवाएं प्रदान करने के लिए समर्पित हैं।", ab1Title: "हमारा लक्ष्य", ab1Desc: "अत्याधुनिक एआई और जीपीएस ट्रैकिंग तकनीकों के साथ उच्च प्रशिक्षित पेशेवर कर्मचारियों के संयोजन द्वारा अद्वितीय सुरक्षा सेवाएं प्रदान करना।", ab2Title: "हमें क्यों चुनें?", ab2Desc: "• कोई प्रॉक्सी नहीं: एआई चेहरे की पहचान द्वारा उपस्थिति सत्यापित।<br>• लाइव ट्रैकिंग: हम वास्तविक समय में गार्ड की निगरानी करते हैं।<br>• प्रशिक्षित पेशेवर: हम सुसंस्कृत, पेशेवर गार्ड प्रदान करते हैं।",
-        sysLogin: "सिस्टम पोर्टल", sysDesc: "केवल अधिकृत परिचालन कर्मचारी। एआई फेस मैचिंग अनिवार्य है।", btnBackHome: "← होम पर वापस जाएं", gLoginTitle: "गार्ड टर्मिनल", btnAccess: "लॉगिन करें", aLoginTitle: "एडमिन डैशबोर्ड", btnLogin: "एडमिन लॉगिन",
+        aboutTitle: "हमारे बारे में", aboutSub: "हम एक आधुनिक, प्रौद्योगिकी-संचालित सुरक्षा एजेंसी हैं जो पारदर्शी और अत्यधिक पेशेवर सुरक्षा सेवाएं प्रदान करने के लिए समर्पित हैं।", ab1Title: "हमारा लक्ष्य", ab1Desc: "अत्याधुनिक जीपीएस ट्रैकिंग तकनीकों के साथ उच्च प्रशिक्षित पेशेवर कर्मचारियों के संयोजन द्वारा अद्वितीय सुरक्षा सेवाएं प्रदान करना।", ab2Title: "हमें क्यों चुनें?", ab2Desc: "• फोटो सत्यापन: कैमरा कैप्चर द्वारा उपस्थिति सत्यापित।<br>• लाइव ट्रैकिंग: हम वास्तविक समय में गार्ड की निगरानी करते हैं।<br>• प्रशिक्षित पेशेवर: हम सुसंस्कृत, पेशेवर गार्ड प्रदान करते हैं।",
+        sysLogin: "सिस्टम पोर्टल", sysDesc: "केवल अधिकृत परिचालन कर्मचारी। फोटो सत्यापन अनिवार्य है।", btnBackHome: "← होम पर वापस जाएं", gLoginTitle: "गार्ड टर्मिनल", btnAccess: "लॉगिन करें", aLoginTitle: "एडमिन डैशबोर्ड", btnLogin: "एडमिन लॉगिन",
         dashTitle: "ग्लोबल डैशबोर्ड", btnDisconnect: "लॉगआउट", bookTitle: "📥 ग्राहक बुकिंग", attTitle: "दैनिक उपस्थिति लाइब्रेरी", btnExport: "📥 एक्सेल", regTitle: "गार्ड कार्मिक रोस्टर", btnSaveGuard: "सेव करें", adminMgtTitle: "सह-व्यवस्थापक प्रबंधन", btnAddNewAdmin: "एडमिन जोड़ें",
         btnIn: "ड्यूटी शुरू करें (चेक इन)", btnOut: "ड्यूटी समाप्त करें (चेक आउट)", btnLogoutSession: "लॉगआउट करें",
-        faceTitleIn: "चेक-इन स्कैन", faceTitleOut: "चेक-आउट स्कैन", faceSubtitle: "कृपया सीधे कैमरे में देखें।", btnCapture: "📸 फोटो लें", btnScanFace: "✅ सत्यापित करें", btnRetake: "🔄 फिर से लें", btnCancelFace: "रद्द करें",
+        faceTitleIn: "चेक-इन स्कैन", faceTitleOut: "चेक-आउट स्कैन", faceSubtitle: "कृपया सीधे कैमरे में देखें।", btnCapture: "📸 फोटो लें", btnScanFace: "✅ सेव करें", btnRetake: "🔄 फिर से लें", btnCancelFace: "रद्द करें",
         thB1: "तारीख", thB2: "ग्राहक का नाम", thB3: "संपर्क जानकारी", thB4: "उद्देश्य", thB5: "स्थान", thB6: "विवरण",
-        th1: "स्थिति", th2: "नाम (आईडी)", th3: "इन समय", th4: "इन फोटो", th5: "आउट समय", th6: "आउट फोटो (एआई)", th7: "कुल समय", th8: "इन लोकेशन", th9: "आउट लोकेशन", th10: "एक्शन",
-        msgAiFail: "कोई चेहरा नहीं मिला। कृपया फिर से फोटो लें।", msgProxy: "चेतावनी: चेहरा मेल नहीं खाता।"
+        th1: "स्थिति", th2: "नाम (आईडी)", th3: "इन समय", th4: "इन फोटो", th5: "आउट समय", th6: "आउट फोटो", th7: "कुल समय", th8: "इन लोकेशन", th9: "आउट लोकेशन", th10: "एक्शन",
+        formNote: "नोट: यह फॉर्म जमा करने के बाद, आपको हमारी सहायता टीम को somenathbose869@gmail.com पर ईमेल करना होगा"
     }
 };
 
@@ -440,12 +1257,13 @@ window.setLanguage = (lang) => {
     setTxt('t_faceTitle', t.faceTitleIn); setTxt('t_faceSubtitle', t.faceSubtitle); 
     setTxt('btnCapture', t.btnCapture); setTxt('btnScanFace', t.btnScanFace); setTxt('btnRetake', t.btnRetake); 
     setTxt('t_btnCancelFace1', t.btnCancelFace); setTxt('t_btnCancelFace2', t.btnCancelFace);
+    setTxt('t_formNote', t.formNote);
 
     setPlc('bookName', lang === 'bn' ? "আপনার পুরো নাম" : (lang === 'hi' ? "आपका पूरा नाम" : "Your Full Name"));
     setPlc('bookPhone', lang === 'bn' ? "মোবাইল নাম্বার" : (lang === 'hi' ? "मोबाइल नंबर" : "Mobile Number"));
     setPlc('bookEmail', lang === 'bn' ? "ইমেইল অ্যাড্রেস" : (lang === 'hi' ? "ईमेल पता" : "Email Address (For Confirmation)"));
     setPlc('bookLocation', lang === 'bn' ? "সার্ভিসের সম্পূর্ণ ঠিকানা" : (lang === 'hi' ? "सेवा का पूरा पता" : "Full Service Location / Address"));
-    setPlc('bookReq', lang === 'bn' ? "বিশেষ রিকোয়ারমেন্ট..." : (lang === 'hi' ? "विशेष आवश्यकताएं..." : "Specific Requirements..."));
+    setPlc('bookReq', lang === 'bn' ? "বিশেষ রিকোয়ারমেন্ট..." : (lang === 'hi' ? "विशेष आवश्यकताएं..." : "Specific Requirements..."));
     setPlc('gid', lang === 'bn' ? "আইডি নম্বর দিন" : (lang === 'hi' ? "आईडी नंबर दर्ज करें" : "Enter Guard ID Number"));
     setPlc('auser', lang === 'bn' ? "অ্যাডমিন ইমেইল" : (lang === 'hi' ? "एडमिन ईमेल" : "Admin Email"));
     setPlc('apass', lang === 'bn' ? "পাসওয়ার্ড" : (lang === 'hi' ? "पासवर्ड" : "Password"));
@@ -453,6 +1271,8 @@ window.setLanguage = (lang) => {
     for(let i=1; i<=6; i++) setTxt('thB'+i, t['thB'+i]);
     for(let i=1; i<=10; i++) setTxt('th'+i, t['th'+i]);
 };
+
+window.onload = () => { window.setLanguage(window.currentLang); };
 
 /* --- DIRECT BOOKING SUBMIT & EMAIL NOTIFICATION LOGIC --- */
 window.submitBookingForm = async (e) => {
@@ -466,24 +1286,31 @@ window.submitBookingForm = async (e) => {
         date: new Date().toLocaleDateString()
     };
 
+    const myCompanyEmail = "somenathbose869@gmail.com";
+
     try {
         await addDoc(collection(db, "bookings"), { ...bookingData, timestamp: serverTimestamp() });
         
         try {
             await emailjs.send("service_7fj3dtm", "template_ez0nzuk", {
                 to_email: bookingData.email, client_name: bookingData.name, client_phone: bookingData.phone,
-                service_purpose: bookingData.purpose, service_location: bookingData.location, special_req: bookingData.req
+                service_purpose: bookingData.purpose, service_location: bookingData.location, special_req: bookingData.req,
+                company_email: myCompanyEmail
             });
         } catch (emailErr) { console.error("EmailJS Notification failed to send", emailErr); }
 
-        alert(window.currentLang === 'bn' ? "✅ বুকিং রিকোয়েস্ট সফলভাবে জমা হয়েছে।" : (window.currentLang === 'hi' ? "✅ बुकिंग अनुरोध सफलतापूर्वक सबमिट किया गया।" : "✅ Booking Request Successfully Submitted!"));
+        let successMsg = "✅ Booking Request Successfully Submitted!\n\nNote: You must also email our support team at: " + myCompanyEmail;
+        if(window.currentLang === 'bn') successMsg = "✅ বুকিং রিকোয়েস্ট সফলভাবে জমা হয়েছে।\n\nনোট: আপনাকে অবশ্যই আমাদের সাপোর্ট টিমকে ইমেইল করতে হবে: " + myCompanyEmail;
+        if(window.currentLang === 'hi') successMsg = "✅ बुकिंग अनुरोध सफलतापूर्वक सबमिट किया गया।\n\nनोट: आपको हमारी सहायता टीम को ईमेल भी करना होगा: " + myCompanyEmail;
+        
+        alert(successMsg);
         document.getElementById("mainBookingForm").reset();
 
     } catch (err) { alert("Error saving booking: " + err.message); }
     btn.innerText = ogText; btn.disabled = false;
 };
 
-/* --- ADMIN PANEL: LOAD BOOKINGS --- */
+/* --- ADMIN PANEL: LOAD AND DELETE BOOKINGS --- */
 function loadBookings() {
     onSnapshot(query(collection(db, "bookings"), orderBy("timestamp", "desc")), s => {
         const b = document.getElementById("bookingsBody"); b.innerHTML = "";
@@ -499,20 +1326,17 @@ function loadBookings() {
                 <td><span class="badge" style="background:var(--accent); color:white;">${r.purpose}</span></td>
                 <td>${r.location}</td>
                 <td style="font-size:11px;">${r.req || "--"}</td>
+                <td><button type="button" onclick="window.deleteBooking('${d.id}')" class="action-btn btn-danger" style="padding:6px 10px; font-size:11px; width:auto;">DEL</button></td>
             </tr>`;
         });
     });
 }
 
-/* --- FIXED AI CORE --- */
-async function loadAIModels() {
-    try {
-        const url = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
-        await Promise.all([faceapi.nets.ssdMobilenetv1.loadFromUri(url), faceapi.nets.faceLandmark68Net.loadFromUri(url), faceapi.nets.faceRecognitionNet.loadFromUri(url)]);
-        window.aiReady = true; document.getElementById("aiStatus").innerText = "✅ AI Core Ready"; document.getElementById("aiStatus").style.background = "rgba(5, 150, 105, 0.9)";
-    } catch (e) { console.error("AI Load Error:", e); document.getElementById("aiStatus").innerText = "❌ AI Failed - Offline Mode"; }
-}
-window.onload = () => { window.setLanguage(window.currentLang); loadAIModels(); };
+window.deleteBooking = async (id) => {
+    if(confirm("Are you sure you want to delete this client request?")) {
+        await deleteDoc(doc(db, "bookings", id));
+    }
+};
 
 /* --- STAFF AUTH (Admin & Guard) --- */
 window.adminLogin = async (e) => {
@@ -543,8 +1367,11 @@ window.guardLogin = async (e) => {
             const shiftSnap = await getDocs(query(collection(db, "attendance"), where("guardId", "==", id), where("outTime", "==", "")));
             
             if(!shiftSnap.empty) {
-                const shiftData = shiftSnap.docs[0]; window.activeShiftId = shiftData.id; window.savedFaceDescriptorJSON = shiftData.data().faceDescriptor; 
-                document.getElementById("guardSelfie").src = shiftData.data().photo; document.getElementById("guardSelfie").style.display = "block";
+                const shiftData = shiftSnap.docs[0]; window.activeShiftId = shiftData.id; 
+                if (shiftData.data().photo) {
+                    document.getElementById("guardSelfie").src = shiftData.data().photo; 
+                    document.getElementById("guardSelfie").style.display = "block";
+                }
                 document.getElementById("btnIn").classList.add("hidden"); document.getElementById("btnOut").classList.remove("hidden"); startGPS(); 
             } else { 
                 document.getElementById("btnIn").classList.remove("hidden"); document.getElementById("btnOut").classList.add("hidden"); document.getElementById("guardSelfie").style.display = "none";
@@ -575,13 +1402,11 @@ window.cancelEdit = () => { window.editModeId = null; document.getElementById("n
 window.deleteGuard = async (id) => { if(confirm("Delete this guard?")) await deleteDoc(doc(db, 'guards', id)); };
 function loadGuards() { onSnapshot(collection(db, "guards"), s => { window.allGuards = []; const b = document.getElementById("guardListBody"); b.innerHTML = ""; s.forEach(d => { let g=d.data(); g.id=d.id; window.allGuards.push(g); let zSafe = g.zone ? g.zone.replace(/'/g, "\\'") : ''; b.innerHTML += `<tr><td><b>${g.id}</b></td><td>${g.name}</td><td>${g.zone||"--"}</td><td><button type="button" onclick="window.loadEdit('${g.id}','${g.name}','${zSafe}')" class="action-btn btn-warning" style="padding:4px 8px;font-size:11px;width:auto;">EDIT</button> <button type="button" onclick="window.deleteGuard('${g.id}')" class="action-btn btn-danger" style="padding:4px 8px;font-size:11px;width:auto;">DEL</button></td></tr>`; }); window.generateDailyReport(); }); }
 
-/* --- 🌟 NEW: MANUAL CAMERA SNAPSHOT & VERIFICATION LOGIC --- */
+/* --- MANUAL CAMERA SNAPSHOT LOGIC --- */
 window.initCameraAction = async (act) => {
-    if(!window.aiReady) return alert("AI is loading. Please try again in 5 seconds."); 
     window.cameraActionType = act; 
     document.getElementById("t_faceTitle").innerText = act === "checkin" ? i18n[window.currentLang].faceTitleIn : i18n[window.currentLang].faceTitleOut;
     
-    // Reset to Live Camera view
     window.retakePhoto();
     document.getElementById("faceAuthModal").classList.remove("hidden");
     
@@ -602,9 +1427,8 @@ window.takeSnapshot = () => {
     const sx = ((video.videoWidth || 480) - minDim)/2; const sy = ((video.videoHeight || 480) - minDim)/2; 
     canvas.getContext("2d").drawImage(video, sx, sy, minDim, minDim, 0, 0, 300, 300);
     
-    window.capturedFaceBase64 = canvas.toDataURL("image/jpeg", 0.8);
+    window.capturedFaceBase64 = canvas.toDataURL("image/jpeg", 0.5);
     
-    // Freeze frame by showing static image
     document.getElementById("cameraFeed").style.display = "none";
     document.getElementById("scanLine").style.display = "none";
     
@@ -612,7 +1436,6 @@ window.takeSnapshot = () => {
     snapImg.src = window.capturedFaceBase64;
     snapImg.style.display = "block";
     
-    // Switch Buttons
     document.getElementById("cameraControls").classList.add("hidden");
     document.getElementById("verifyControls").classList.remove("hidden");
 };
@@ -631,83 +1454,112 @@ window.closeFaceAuth = () => {
     if(window.cameraStream) window.cameraStream.getTracks().forEach(t => t.stop()); 
 };
 
-window.processAIPhoto = async () => {
+window.processPhoto = async () => {
     const btn = document.getElementById("btnScanFace"); const og = btn.innerText; 
-    btn.innerText = "VERIFYING..."; btn.disabled = true;
+    btn.innerText = "SAVING..."; btn.disabled = true;
     
     try {
-        const imgElement = document.getElementById("capturedSnapshot");
-        let detection = null; 
-        
-        if(window.aiReady) {
-            detection = await faceapi.detectSingleFace(imgElement).withFaceLandmarks().withFaceDescriptor();
-        }
-        
         if (window.cameraActionType === "checkin") {
-            if (!detection) { 
-                alert(i18n[window.currentLang].msgAiFail); 
-                btn.innerText = og; btn.disabled = false; 
-                return; // Enforce taking a good picture on Check-In
-            }
-            window.savedFaceDescriptorJSON = JSON.stringify(Array.from(detection.descriptor)); 
             window.closeFaceAuth(); executeCheckIn(); 
         } else {
-            let aiStatus = "Verified"; 
-            if (!detection) {
-                aiStatus = "Manual Check (No Face)"; 
-                alert(i18n[window.currentLang].msgAiFail);
-            } else if(window.savedFaceDescriptorJSON && window.savedFaceDescriptorJSON !== "null") { 
-                const savedDesc = new Float32Array(JSON.parse(window.savedFaceDescriptorJSON));
-                const dist = faceapi.euclideanDistance(savedDesc, detection.descriptor);
-                if (dist > 0.55) { 
-                    aiStatus = "Mismatch Proxy"; 
-                    alert(i18n[window.currentLang].msgProxy); 
-                } else {
-                    alert(window.currentLang === 'bn' ? "✅ ফেস ভেরিফাইড!" : "✅ Face Match Verified!");
-                }
-            } else { aiStatus = "Manual Check"; }
-            window.closeFaceAuth(); executeCheckOut(aiStatus);
+            window.closeFaceAuth(); executeCheckOut();
         }
-    } catch(e) { window.closeFaceAuth(); window.cameraActionType === "checkin" ? executeCheckIn() : executeCheckOut("Manual Check"); }
+    } catch(e) { window.closeFaceAuth(); window.cameraActionType === "checkin" ? executeCheckIn() : executeCheckOut(); }
 };
 
-/* --- DB & DUAL GPS LOCATION FIX --- */
-async function executeCheckIn() { 
-    document.getElementById("liveLoc").innerText = "📍 Securing Location..."; 
-    const fallbackIn = async () => {
-        const ref = await addDoc(collection(db, "attendance"), { guardId: window.activeGuard.id, name: window.activeGuard.name, date: new Date().toLocaleDateString(), isoDate: new Date().toISOString().split('T')[0], inTime: new Date().toLocaleTimeString(), startTime: Date.now(), outTime: "", totalTime: "", checkInLat: null, checkInLon: null, photo: window.capturedFaceBase64, faceDescriptor: window.savedFaceDescriptorJSON, timestamp: serverTimestamp() }); 
-        window.activeShiftId = ref.id; document.getElementById("guardSelfie").src = window.capturedFaceBase64; document.getElementById("guardSelfie").style.display = "block"; document.getElementById("btnIn").classList.add("hidden"); document.getElementById("btnOut").classList.remove("hidden"); localStorage.setItem("persistentTrackId", window.activeGuard.id); startGPS();
+/* --- DB & DUAL GPS LOCATION FIX WITH NON-BLOCKING PHOTO FALLBACK --- */
+async function executeCheckIn() {
+    document.getElementById("liveLoc").innerText = "📍 Securing Location & Saving Record...";
+
+    const performSave = async (lat, lon) => {
+        let docData = { 
+            guardId: window.activeGuard.id, 
+            name: window.activeGuard.name, 
+            date: new Date().toLocaleDateString(), 
+            isoDate: new Date().toISOString().split('T')[0], 
+            inTime: new Date().toLocaleTimeString(), 
+            startTime: Date.now(), 
+            outTime: "", 
+            totalTime: "", 
+            checkInLat: lat, 
+            checkInLon: lon, 
+            photo: window.capturedFaceBase64, 
+            timestamp: serverTimestamp() 
+        };
+        let ref;
+        try {
+            ref = await addDoc(collection(db, "attendance"), docData);
+        } catch(err) {
+            console.log("Photo rejected or network error, saving without photo");
+            docData.photo = ""; // Drop the photo to bypass block
+            ref = await addDoc(collection(db, "attendance"), docData);
+        }
+        
+        window.activeShiftId = ref.id; 
+        if(docData.photo) {
+            document.getElementById("guardSelfie").src = docData.photo; 
+            document.getElementById("guardSelfie").style.display = "block"; 
+        }
+        document.getElementById("btnIn").classList.add("hidden"); 
+        document.getElementById("btnOut").classList.remove("hidden"); 
+        localStorage.setItem("persistentTrackId", window.activeGuard.id); 
+        startGPS();
     };
 
-    navigator.geolocation.getCurrentPosition(async p => { 
-        const ref = await addDoc(collection(db, "attendance"), { guardId: window.activeGuard.id, name: window.activeGuard.name, date: new Date().toLocaleDateString(), isoDate: new Date().toISOString().split('T')[0], inTime: new Date().toLocaleTimeString(), startTime: Date.now(), outTime: "", totalTime: "", checkInLat: p.coords.latitude, checkInLon: p.coords.longitude, photo: window.capturedFaceBase64, faceDescriptor: window.savedFaceDescriptorJSON, timestamp: serverTimestamp() }); 
-        window.activeShiftId = ref.id; document.getElementById("guardSelfie").src = window.capturedFaceBase64; document.getElementById("guardSelfie").style.display = "block"; document.getElementById("btnIn").classList.add("hidden"); document.getElementById("btnOut").classList.remove("hidden"); localStorage.setItem("persistentTrackId", window.activeGuard.id); startGPS(); 
-    }, err => { fallbackIn(); }, {enableHighAccuracy: true, timeout: 10000}); 
+    navigator.geolocation.getCurrentPosition(
+        async p => { try { await performSave(p.coords.latitude, p.coords.longitude); } catch(err) { alert("Check-in Error: " + err.message); document.getElementById("liveLoc").innerText = "❌ Save Failed."; } }, 
+        async err => { try { await performSave(null, null); } catch(err) { alert("Check-in Error: " + err.message); document.getElementById("liveLoc").innerText = "❌ Save Failed."; } }, 
+        {enableHighAccuracy: true, timeout: 10000}
+    );
 }
 
-async function executeCheckOut(statusLabel) { 
-    if(!window.activeShiftId) return alert("Shift ID not found!"); 
+async function executeCheckOut() {
+    if(!window.activeShiftId) return alert("Shift ID not found!");
+    document.getElementById("liveLoc").innerText = "📍 Securing Checkout & Saving Record...";
+
     const saveOutData = async (lat, lon) => {
-        try { 
-            const sDoc = await getDoc(doc(db, "attendance", window.activeShiftId)); 
-            const diff = Date.now() - sDoc.data().startTime; const hrs = Math.floor(diff/3600000); const mins = Math.floor((diff%3600000)/60000); 
-            await updateDoc(doc(db, "attendance", window.activeShiftId), { outTime: new Date().toLocaleTimeString(), totalTime: `${hrs}h ${mins}m`, checkoutPhoto: window.capturedFaceBase64, checkoutStatus: statusLabel, lastLat: lat, lastLon: lon }); 
-            await deleteDoc(doc(db, "tracking", window.activeGuard.id)); 
-            localStorage.removeItem("persistentTrackId"); localStorage.removeItem("lastLat"); localStorage.removeItem("lastLon"); 
-            alert("✅ Checkout Successful!"); location.reload(); 
-        } catch(e) { alert("Checkout Error: " + e.message); }
+        try {
+            const sDoc = await getDoc(doc(db, "attendance", window.activeShiftId));
+            const diff = Date.now() - sDoc.data().startTime;
+            const hrs = Math.floor(diff/3600000);
+            const mins = Math.floor((diff%3600000)/60000);
+
+            let outData = {
+                outTime: new Date().toLocaleTimeString(),
+                totalTime: `${hrs}h ${mins}m`,
+                checkoutPhoto: window.capturedFaceBase64,
+                lastLat: lat,
+                lastLon: lon
+            };
+
+            try {
+                await updateDoc(doc(db, "attendance", window.activeShiftId), outData);
+            } catch(e) {
+                console.log("Photo rejected or network error, checking out without photo");
+                outData.checkoutPhoto = ""; // Drop the photo to bypass block
+                await updateDoc(doc(db, "attendance", window.activeShiftId), outData);
+            }
+
+            await deleteDoc(doc(db, "tracking", window.activeGuard.id));
+            localStorage.removeItem("persistentTrackId"); localStorage.removeItem("lastLat"); localStorage.removeItem("lastLon");
+            alert("✅ Checkout Successful!");
+            location.reload();
+        } catch(e) {
+            alert("Checkout Error: " + e.message);
+            document.getElementById("liveLoc").innerText = "❌ Save Failed. Try Again.";
+        }
     };
-    document.getElementById("liveLoc").innerText = "📍 Securing Checkout Location...";
+
     navigator.geolocation.getCurrentPosition(
         p => saveOutData(p.coords.latitude, p.coords.longitude),
-        err => saveOutData(parseFloat(localStorage.getItem("lastLat")) || null, parseFloat(localStorage.getItem("lastLon")) || null), 
+        err => saveOutData(parseFloat(localStorage.getItem("lastLat")) || null, parseFloat(localStorage.getItem("lastLon")) || null),
         {enableHighAccuracy: true, timeout: 5000}
     );
 }
 
 function startGPS() { const id = localStorage.getItem("persistentTrackId"); if(!id) return; window.watchId = navigator.geolocation.watchPosition(p => { localStorage.setItem("lastLat", p.coords.latitude); localStorage.setItem("lastLon", p.coords.longitude); setDoc(doc(db, "tracking", id), { lat: p.coords.latitude, lon: p.coords.longitude, timestamp: serverTimestamp() }); if(document.getElementById("liveLoc")) document.getElementById("liveLoc").innerText = `📡 LIVE: ${p.coords.latitude.toFixed(4)}, ${p.coords.longitude.toFixed(4)}`; }, err => {}, {enableHighAccuracy: true}); }
 
-/* --- ADMIN UTILS & EXCEL FIX --- */
+/* --- ADMIN UTILS, EXCEL & CLEAR OLD DATA --- */
 window.logout = () => signOut(auth).then(() => location.reload());
 window.togglePassword = (id, btn) => { const el = document.getElementById(id); if(el.type==="password"){ el.type="text"; btn.innerText="🙈";} else {el.type="password"; btn.innerText="👁️";} };
 window.viewPhoto = (src) => { document.getElementById("fullSizeImage").src = src; document.getElementById("photoViewerModal").classList.remove("hidden"); };
@@ -715,39 +1567,68 @@ window.closePhotoViewer = () => { document.getElementById("photoViewerModal").cl
 window.openMap = (lat, lon) => { window.open(`https://www.google.com/maps/search/?api=1&query=${lat},${lon}`, '_blank'); };
 window.trackLive = (id) => { onSnapshot(doc(db, "tracking", id), d => { if(d.exists()) window.openMap(d.data().lat, d.data().lon); else alert("Lost GPS"); }); };
 
+window.deleteAttendance = async (id) => {
+    if(confirm("Are you sure you want to delete this attendance record?")) {
+        try {
+            await deleteDoc(doc(db, 'attendance', id));
+            window.generateDailyReport(); // Refresh the table
+        } catch(err) {
+            alert("Error deleting record: " + err.message);
+        }
+    }
+};
+
 window.generateDailyReport = async () => {
     const td = document.getElementById('filterDate').value; if(!td) return;
     const attSnap = await getDocs(query(collection(db, "attendance"), where("isoDate", "==", td)));
     let map = {}; attSnap.forEach(d => { let data = d.data(); data.id = d.id; map[data.guardId] = data; });
     const tb = document.getElementById("attendanceBody"); tb.innerHTML = "";
-    window.dailyReportData = []; // 🌟 FIXED: Store Array for Excel Download
+    window.dailyReportData = []; 
     
     window.allGuards.forEach(g => {
         const r = map[g.id];
         if(r) {
             let isLive = !r.outTime;
-            let outP = r.checkoutPhoto ? `<img src="${r.checkoutPhoto}" onclick="window.viewPhoto('${r.checkoutPhoto}')" class="photo-thumbnail" style="border-color:${r.checkoutStatus==='Verified'?'#059669':'#dc2626'}"><br><span style="font-size:9px;color:${r.checkoutStatus==='Verified'?'#059669':'#dc2626'}; font-weight:bold;">${r.checkoutStatus}</span>` : "--";
+            let inP = r.photo ? `<img src="${r.photo}" onclick="window.viewPhoto('${r.photo}')" class="photo-thumbnail">` : "No Photo";
+            let outP = r.checkoutPhoto ? `<img src="${r.checkoutPhoto}" onclick="window.viewPhoto('${r.checkoutPhoto}')" class="photo-thumbnail">` : (isLive ? "--" : "No Photo");
             
             let inLocBtn = r.checkInLat ? `<button type="button" onclick="window.openMap(${r.checkInLat},${r.checkInLon})" class="action-btn btn-dark" style="padding:4px;font-size:10px;width:auto;">📍 MAP</button>` : "--";
             let outLocBtn = isLive ? `<button type="button" onclick="window.trackLive('${g.id}')" class="action-btn btn-primary" style="padding:4px;font-size:10px;width:auto;">🌍 LIVE</button>` : (r.lastLat ? `<button type="button" onclick="window.openMap(${r.lastLat},${r.lastLon})" class="action-btn btn-warning" style="padding:4px;font-size:10px;width:auto;color:black;">🏁 MAP</button>` : "--");
 
-            tb.innerHTML += `<tr><td><span class="badge badge-present">PRESENT</span></td><td><b>${g.name}</b><br><span style="font-size:11px; color:#64748b;">${g.id}</span></td><td>${r.inTime}</td><td><img src="${r.photo}" onclick="window.viewPhoto('${r.photo}')" class="photo-thumbnail"></td><td>${r.outTime||'--'}</td><td style="text-align:center;">${outP}</td><td><b>${r.totalTime||'On Duty'}</b></td><td>${inLocBtn}</td><td>${outLocBtn}</td><td><button type="button" onclick="deleteDoc(doc(db,'attendance','${r.id}')).then(()=>window.generateDailyReport())" class="action-btn btn-danger" style="padding:4px;font-size:10px;width:auto;">DEL</button></td></tr>`;
+            // FIXED DEL BUTTON HERE
+            tb.innerHTML += `<tr><td><span class="badge badge-present">PRESENT</span></td><td><b>${g.name}</b><br><span style="font-size:11px; color:#64748b;">${g.id}</span></td><td>${r.inTime}</td><td style="text-align:center;">${inP}</td><td>${r.outTime||'--'}</td><td style="text-align:center;">${outP}</td><td><b>${r.totalTime||'On Duty'}</b></td><td>${inLocBtn}</td><td>${outLocBtn}</td><td><button type="button" onclick="window.deleteAttendance('${r.id}')" class="action-btn btn-danger" style="padding:4px;font-size:10px;width:auto;">DEL</button></td></tr>`;
             
-            window.dailyReportData.push({ Status: "PRESENT", ID: g.id, Name: g.name, CheckIn: r.inTime, CheckOut: r.outTime||"Live", TotalTime: r.totalTime||"Live", AI_Status: r.checkoutStatus||"--" });
+            window.dailyReportData.push({ Status: "PRESENT", ID: g.id, Name: g.name, CheckIn: r.inTime, CheckOut: r.outTime||"Live", TotalTime: r.totalTime||"Live" });
         } else {
             tb.innerHTML += `<tr><td><span class="badge badge-absent">ABSENT</span></td><td><b>${g.name}</b><br><span style="font-size:11px; color:#64748b;">${g.id}</span></td><td colspan="8">--</td></tr>`;
-            window.dailyReportData.push({ Status: "ABSENT", ID: g.id, Name: g.name, CheckIn: "--", CheckOut: "--", TotalTime: "--", AI_Status: "--" });
+            window.dailyReportData.push({ Status: "ABSENT", ID: g.id, Name: g.name, CheckIn: "--", CheckOut: "--", TotalTime: "--" });
         }
     });
 };
+
 window.downloadDailyReport = () => { 
     if(!window.dailyReportData || window.dailyReportData.length===0) return alert("No data to download."); 
     const dateStr = document.getElementById('filterDate').value; 
-    let csv = `Daily Security Report - ${dateStr}\n\nStatus,Guard ID,Guard Name,Check In,Check Out,Total Time,AI Check-out Status\n`; 
-    window.dailyReportData.forEach(r => { csv += `${r.Status},${r.ID},"${r.Name}",${r.CheckIn},${r.CheckOut},${r.TotalTime},${r.AI_Status}\n`; }); 
+    let csv = `Daily Security Report - ${dateStr}\n\nStatus,Guard ID,Guard Name,Check In,Check Out,Total Time\n`; 
+    window.dailyReportData.forEach(r => { csv += `${r.Status},${r.ID},"${r.Name}",${r.CheckIn},${r.CheckOut},${r.TotalTime}\n`; }); 
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); 
     const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `SecureGuard_Report_${dateStr}.csv`; link.click(); 
 };
+
+window.clearOldAttendance = async () => {
+    if(!confirm("Are you sure you want to delete ALL attendance data older than 7 days? This action cannot be undone.")) return;
+    try {
+        const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+        const attSnap = await getDocs(query(collection(db, "attendance"), where("startTime", "<", sevenDaysAgo)));
+        let count = 0;
+        attSnap.forEach(d => { deleteDoc(d.ref); count++; });
+        alert(`Successfully deleted ${count} old attendance records.`);
+        window.generateDailyReport();
+    } catch(err) {
+        alert("Error clearing old data: " + err.message);
+    }
+};
+
 document.getElementById('filterDate').value = new Date().toISOString().split('T')[0];
 </script>
 </body>
